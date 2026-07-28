@@ -1,54 +1,36 @@
-# Personal portfolio + automated AI & security news digest
+# socosec.github.io
 
-A Jekyll site for GitHub Pages, plus a GitHub Actions agent that publishes a
-short daily digest of AI and cybersecurity news from an allowlist of trusted
-sources — every item linked to its original publisher.
+Personal portfolio of **Esmail Abdullah** — cybersecurity engineer, M.S.
+Cybersecurity student at Óbuda University, Budapest.
 
-## Deploy in 5 steps
+**Live site → https://socosec.github.io**
 
-1. **Create the repo.** For a `https://<username>.github.io` address, name the
-   repo exactly `<username>.github.io`. Any other name works too (the site
-   lives at `https://<username>.github.io/<repo>` — set `baseurl` in
-   `_config.yml` to `/<repo>` in that case).
+Alongside the portfolio, this repo runs an autonomous news agent: every
+morning a Python script on GitHub Actions reads a fixed allowlist of trusted
+publications (MIT Technology Review, Ars Technica, The Verge, Reuters, Krebs
+on Security, BleepingComputer, The Hacker News, Schneier on Security, CISA),
+summarizes the day's AI and cybersecurity stories, and publishes a short
+digest — with every item linked to its source.
 
-2. **Push these files.**
-   ```bash
-   git init && git add . && git commit -m "initial site"
-   git branch -M main
-   git remote add origin https://github.com/<username>/<repo>.git
-   git push -u origin main
-   ```
+## How the agent stays trustworthy
 
-3. **Turn on GitHub Pages.** Repo → Settings → Pages → Source: *Deploy from a
-   branch* → Branch: `main`, folder `/ (root)`. GitHub builds Jekyll for you;
-   the site is live a minute later.
+- **Allowlist only** — links not on a listed domain are dropped, even if they
+  appear inside a trusted feed (`agent/sources.yml`)
+- **No repeats** — covered URLs are tracked in `agent/posted.json`
+- **Source on every item** — each summary names and links the publisher
+- **No invention** — summaries are constrained to the original headline and
+  excerpt; if AI summarization is unavailable, the publisher's own excerpt
+  is used
 
-4. **(Optional but recommended) Add your Anthropic API key** so summaries are
-   written by Claude instead of using the publishers' raw excerpts:
-   Settings → Secrets and variables → Actions → New repository secret →
-   name `ANTHROPIC_API_KEY`. Without it, the agent still works — it falls back
-   to the feeds' own summary text.
+## Stack
 
-5. **Test the agent.** Actions tab → *Daily news digest* → *Run workflow*.
-   It commits a new post to `_posts/` and Pages rebuilds automatically.
-   After that it runs daily at 06:30 UTC (edit the cron in
-   `.github/workflows/news-agent.yml`).
-
-## Make it yours
-
-- `_config.yml` — your name, email, GitHub/LinkedIn handles
-- `index.html` — replace the three placeholder project cards and the About text
-- `agent/sources.yml` — add or remove trusted sources; the agent refuses any
-  link that isn't on a listed domain
-- `assets/css/style.css` — colors and fonts are all CSS variables at the top
+- **Site:** Jekyll on GitHub Pages (no build setup — Pages compiles it)
+- **Agent:** Python (`agent/news_agent.py`), scheduled by GitHub Actions
+  daily at 06:30 UTC (`.github/workflows/news-agent.yml`)
+- **Summaries:** Anthropic API (optional, via `ANTHROPIC_API_KEY` secret),
+  with a graceful fallback to feed excerpts
 
 ## Run the agent locally
 
-```bash
-pip install -r agent/requirements.txt
-export ANTHROPIC_API_KEY=sk-ant-...   # optional
-python agent/news_agent.py            # writes a post into _posts/
-```
-
-`agent/posted.json` tracks which article URLs have already been covered so the
-digest never repeats a story.
+    pip install -r agent/requirements.txt
+    python agent/news_agent.py
