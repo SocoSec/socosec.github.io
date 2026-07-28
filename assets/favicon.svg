@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- shield -->
+  <path d="M32 3 L56 12 V30 C56 46 45 56 32 61 C19 56 8 46 8 30 V12 Z"
+        fill="#14313A"/>
+  <!-- amber inner edge -->
+  <path d="M32 8 L51 15.4 V30 C51 43 42 51.5 32 55.8 C22 51.5 13 43 13 30 V15.4 Z"
+        fill="none" stroke="#F5A300" stroke-width="2.5"/>
+  <!-- keyhole -->
+  <circle cx="32" cy="28" r="6.5" fill="#F5A300"/>
+  <path d="M29.5 32 L34.5 32 L36.5 44 L27.5 44 Z" fill="#F5A300"/>
+</svg>
