@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% if page.title %}{{ page.title }} · {% endif %}{{ site.title }}</title>
+  <meta name="description" content="{{ page.excerpt | default: site.description | strip_html | strip_newlines | truncate: 160 }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+</head>
+<body>
+  <header class="site-header">
+    <a class="wordmark" href="{{ '/' | relative_url }}">{{ site.author.name }}</a>
+    <nav class="site-nav">
+      <a href="{{ '/' | relative_url }}#work">Work</a>
+      <a href="{{ '/' | relative_url }}#digest">Digest</a>
+      <a href="{{ '/' | relative_url }}#about">About</a>
+    </nav>
+  </header>
+
+  <main>
+    {{ content }}
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p class="footer-name">{{ site.author.name }}</p>
+      <p class="footer-meta">Digest posts are generated daily by an automated agent from an allowlist of trusted sources. Every item links to its original publisher.</p>
+      <p class="footer-links">
+        <a href="https://github.com/{{ site.author.github }}">GitHub</a>
+        <a href="https://www.linkedin.com/in/{{ site.author.linkedin }}">LinkedIn</a>
+        <a href="mailto:{{ site.author.email }}">Email</a>
+      </p>
+    </div>
+  </footer>
+</body>
+</html>

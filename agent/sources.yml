@@ -1,0 +1,37 @@
+# Trusted source allowlist. The agent ONLY reads these feeds, and drops any
+# item whose link is not on one of these domains. Add/remove as you like.
+
+max_items_per_topic: 4      # how many stories per topic in each digest
+lookback_hours: 26          # only include items published within this window
+
+topics:
+  AI:
+    - name: MIT Technology Review — AI
+      feed: https://www.technologyreview.com/topic/artificial-intelligence/feed
+      domain: technologyreview.com
+    - name: Ars Technica — AI
+      feed: https://arstechnica.com/ai/feed/
+      domain: arstechnica.com
+    - name: The Verge — AI
+      feed: https://www.theverge.com/rss/ai-artificial-intelligence/index.xml
+      domain: theverge.com
+    - name: Reuters — Technology
+      feed: https://www.reutersagency.com/feed/?best-topics=tech&post_type=best
+      domain: reuters.com
+
+  SEC:
+    - name: Krebs on Security
+      feed: https://krebsonsecurity.com/feed/
+      domain: krebsonsecurity.com
+    - name: BleepingComputer
+      feed: https://www.bleepingcomputer.com/feed/
+      domain: bleepingcomputer.com
+    - name: The Hacker News
+      feed: https://feeds.feedburner.com/TheHackersNews
+      domain: thehackernews.com
+    - name: Schneier on Security
+      feed: https://www.schneier.com/feed/atom/
+      domain: schneier.com
+    - name: CISA Advisories
+      feed: https://www.cisa.gov/cybersecurity-advisories/all.xml
+      domain: cisa.gov

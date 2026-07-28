@@ -1,0 +1,23 @@
+# Site settings — edit these
+title: Your Name
+tagline: Engineer — AI & Cybersecurity
+description: >-
+  Personal portfolio and an automated daily digest of AI and cybersecurity
+  news from trusted sources.
+url: "" # e.g. https://yourusername.github.io
+baseurl: "" # e.g. /portfolio if the repo is not <username>.github.io
+
+author:
+  name: Your Name
+  email: you@example.com
+  github: yourusername
+  linkedin: yourusername
+
+# Build settings
+markdown: kramdown
+permalink: /blog/:year/:month/:day/:title/
+exclude:
+  - agent/
+  - README.md
+  - Gemfile
+  - Gemfile.lock

@@ -1,0 +1,14 @@
+---
+layout: default
+---
+<article class="post">
+  <p class="post-eyebrow">
+    <span class="stamp">{{ page.date | date: "%Y-%m-%d" }}</span>
+    {% for tag in page.tags %}<span class="tag">{{ tag }}</span>{% endfor %}
+  </p>
+  <h1 class="post-title">{{ page.title }}</h1>
+  <div class="post-body">
+    {{ content }}
+  </div>
+  <p class="post-back"><a href="{{ '/' | relative_url }}#digest">← Back to the digest</a></p>
+</article>
