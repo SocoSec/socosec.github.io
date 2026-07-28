@@ -1,17 +1,18 @@
-# Site settings — edit these
-title: Your Name
-tagline: Engineer — AI & Cybersecurity
+# Site settings
+title: Esmail Abdullah
+tagline: Cybersecurity Engineer — Security Operations & Offensive Security
 description: >-
-  Personal portfolio and an automated daily digest of AI and cybersecurity
-  news from trusted sources.
-url: "" # e.g. https://yourusername.github.io
-baseurl: "" # e.g. /portfolio if the repo is not <username>.github.io
+  Portfolio of Esmail Abdullah, M.S. Cybersecurity student at Óbuda University
+  in Budapest, with an automated daily digest of AI and cybersecurity news
+  from trusted sources.
+url: "https://socosec.github.io"
+baseurl: ""
 
 author:
-  name: Your Name
-  email: you@example.com
-  github: yourusername
-  linkedin: yourusername
+  name: Esmail Abdullah
+  email: esmailkeabanni@gmail.com
+  github: SocoSec
+  linkedin: Esmailk27
 
 # Build settings
 markdown: kramdown
