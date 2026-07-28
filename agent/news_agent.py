@@ -182,6 +182,15 @@ def build_post(items_by_topic):
     return now, "\n".join(lines), tags
 
 
+def prune_old_posts(keep=10):
+    """Keep only the newest `keep` digest posts; delete older ones."""
+    posts = sorted(POSTS_DIR.glob("*.md"))
+    for old in posts[:-keep]:
+        old.unlink()
+        print(f"Pruned old post: {old.name}")
+  
+
+
 def main():
     config = load_sources()
     posted = load_posted()
@@ -203,7 +212,9 @@ def main():
     for topic in items_by_topic.values():
         for it in topic:
             posted.add(it["link"])
-    save_posted(posted)
+    save_posted(posted) 
+  
+    prune_old_posts(keep=10)
     print(f"Wrote {path.relative_to(ROOT)} with {total} items.")
 
 
