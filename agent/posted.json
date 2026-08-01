@@ -1,9 +1,12 @@
 [
 "https://arstechnica.com/ai/2026/07/chrome-may-get-faster-updates-with-no-restart-required/",
 "https://arstechnica.com/ai/2026/07/despite-ai-hype-googles-data-shows-workers-arent-automating-themselves-away/",
+"https://arstechnica.com/ai/2026/07/google-earth-releases-swiftly-retracts-ai-feature-to-make-fake-satellite-images/",
 "https://arstechnica.com/security/2026/07/jfrog-tries-to-spin-openai-0-day-exploit-of-its-app-into-a-success-story/",
+"https://arstechnica.com/security/2026/07/likely-illegally-claude-gained-access-to-3-networks-will-anthropic-be-held-to-account/",
 "https://arstechnica.com/security/2026/07/microsoft-unveils-ai-security-tools-it-says-outperform-competing-platforms/",
 "https://arstechnica.com/security/2026/07/mythos-uncovers-crypto-weaknesses-that-went-unknown-for-years/",
+"https://arstechnica.com/tech-policy/2026/07/reddit-keeps-weird-dmca-lawsuit-against-web-scraper-alive-despite-googles-loss/",
 "https://krebsonsecurity.com/2026/07/read-this-before-you-buy-that-tv-streaming-stick/",
 "https://thehackernews.com/2026/07/dprk-linked-macos-malvertising-uses.html",
 "https://thehackernews.com/2026/07/fcc-blocks-new-foreign-produced-robots.html",
@@ -11,6 +14,9 @@
 "https://thehackernews.com/2026/07/openai-agent-used-exposed-credentials.html",
 "https://thehackernews.com/2026/07/rapid7-releases-poc-for-exploited-check.html",
 "https://thehackernews.com/2026/07/russian-hackers-exploit-microsoft-owa.html",
+"https://thehackernews.com/2026/08/adobe-campaign-classic-cvss-100-flaw.html",
+"https://thehackernews.com/2026/08/hijacked-hotel-wi-fi-pushes-fake.html",
+"https://www.bleepingcomputer.com/news/security/amgen-says-cloud-data-breach-exposed-patient-health-proprietary-info/",
 "https://www.bleepingcomputer.com/news/security/anthropics-claude-breached-3-orgs-uploaded-pypi-malware-during-tests/",
 "https://www.bleepingcomputer.com/news/security/cubepilot-drone-software-dev-hit-by-dns-hijacking-to-intercept-traffic/",
 "https://www.bleepingcomputer.com/news/security/data-breach-at-medical-billing-firm-mcbs-affects-126-million-people/",
@@ -18,6 +24,7 @@
 "https://www.bleepingcomputer.com/news/security/russian-hackers-exploit-exchange-owa-zero-day-for-long-term-mailbox-access/",
 "https://www.schneier.com/blog/archives/2026/07/american-being-prosecuted-for-wiping-his-phone-before-handing-it-over-to-border-officials.html",
 "https://www.schneier.com/blog/archives/2026/07/axon-is-another-license-plate-surveillance-company.html",
+"https://www.schneier.com/blog/archives/2026/07/friday-squid-blogging-squid-helps-discover-new-marine-species.html",
 "https://www.schneier.com/blog/archives/2026/07/measuring-llms-ability-to-perform-cryptanalysis.html",
 "https://www.schneier.com/blog/archives/2026/07/measuring-the-tendency-of-ai-agents-to-go-rogue.html",
 "https://www.technologyreview.com/2026/07/28/1140853/samsung-chip-workers-exodus-sk-hynix/",
@@ -30,5 +37,6 @@
 "https://www.theverge.com/policy/972850/xai-grok-minnesota-nudification-lawsuit",
 "https://www.theverge.com/tech/972294/meta-q2-2026-earnings-mark-zuckerberg-personal-ai-agents",
 "https://www.theverge.com/tech/972927/microsoft-copilot-super-app-confirmed",
-"https://www.theverge.com/tech/973552/apple-ceo-tim-cook-icloud-plus-ai"
+"https://www.theverge.com/tech/973552/apple-ceo-tim-cook-icloud-plus-ai",
+"https://www.theverge.com/tech/973943/google-earth-ai-image-generation-deepfake-tool"
 ]
