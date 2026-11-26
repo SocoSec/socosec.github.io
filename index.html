@@ -187,7 +187,6 @@ body.focused .tag{display:none}
 /* ---------- panel ---------- */
 #panel{position:fixed;top:0;right:0;bottom:0;width:min(560px,46vw);z-index:15;padding:84px 26px 80px;overflow:auto;
   transform:translateX(105%);transition:transform .7s cubic-bezier(.65,0,.25,1) .25s;scrollbar-width:thin}
-body.focused #panel{transform:none}
 .sheet{background:var(--paper);color:var(--paper-ink);border-radius:3px;padding:30px 32px 34px;box-shadow:0 30px 60px rgba(0,0,0,.6);
   position:relative}
 .sheet::before{content:"";position:absolute;left:0;right:0;top:0;height:8px;background:#8c2f22;border-radius:3px 3px 0 0}
@@ -205,6 +204,47 @@ body.focused #panel{transform:none}
 .links a{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #e2d6bb;text-decoration:none;font-size:14px}
 .links a:hover{color:#8c2f22}
 .links a span:last-child{color:#8a6d45}
+
+/* ---------- flying tape + monitor player ---------- */
+.disk,.books b{cursor:pointer}
+.disk:hover,.books b:hover{filter:brightness(1.15);transform:translateX(-6px)}
+.disk,.books b{transition:transform .2s,filter .2s}
+body.focused .disk:hover,body.focused .books b:hover{transform:none;filter:none}
+.cart{position:absolute;z-index:3;border-radius:3px;display:flex;align-items:center;gap:8px;padding:0 10px;
+  font:600 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;overflow:hidden;
+  box-shadow:0 18px 30px rgba(0,0,0,.6),0 3px 0 rgba(0,0,0,.35);will-change:transform;pointer-events:none}
+.cart::before{content:"";width:16px;height:12px;background:rgba(0,0,0,.75);border-radius:1px;flex:none}
+.deck .slot{transition:box-shadow .3s}
+.deck.loaded .slot{box-shadow:0 0 14px #4dffb8,inset 0 0 4px #4dffb8}
+.deck::after{content:"";position:absolute;left:250px;top:21px;width:8px;height:8px;border-radius:50%;background:#3a1a12}
+.deck.loaded::after{background:#ff4d3a;box-shadow:0 0 8px #ff4d3a}
+
+#tv{position:fixed;z-index:12;display:none;flex-direction:column;overflow:hidden;
+  background:radial-gradient(ellipse at center,#103d2c,#04110b 92%);color:var(--crt-glow);
+  font-family:"VT323",monospace;line-height:1.1;text-shadow:0 0 6px rgba(88,255,176,.7);box-shadow:inset 0 0 70px #000}
+#tv.on{display:flex;animation:tvon .6s ease-out}
+#tv.off{display:flex;animation:tvoff .33s ease-in forwards}
+@keyframes tvon{0%{transform:scale(1,.006);filter:brightness(5)}40%{transform:scale(1,.006);filter:brightness(5)}100%{transform:none;filter:none}}
+@keyframes tvoff{0%{transform:none}60%{transform:scale(1,.006);filter:brightness(5)}100%{transform:scale(0,.006);opacity:0}}
+#tv::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(transparent 0 2px,rgba(0,0,0,.22) 2px 3px),radial-gradient(ellipse at center,transparent 60%,rgba(0,0,0,.45));animation:flick .12s infinite}
+#tv .osd{display:flex;justify-content:space-between;align-items:center;padding:.6em 1.4em .2em;font-size:.95em;letter-spacing:.12em;flex:none}
+#tv .osd.bot{padding:.3em 1.4em .7em}
+#tv .osd button{font:inherit;color:inherit;letter-spacing:.12em;padding:0 .4em;border-radius:2px}
+#tv .osd button:hover,#tv .osd button:focus-visible{background:var(--crt-glow);color:#04110b;text-shadow:none;outline:none}
+#tv .tvbody{flex:1;overflow:auto;padding:.3em 1.6em 1em;scrollbar-width:thin;scrollbar-color:#2a7a55 transparent}
+#tv h1{font-size:2.5em;font-weight:400;line-height:.95;margin:.15em 0 .25em;letter-spacing:.02em}
+#tv h2{font-size:.95em;font-weight:400;margin:1.1em 0 .3em;opacity:.65;letter-spacing:.1em;text-transform:uppercase}
+#tv p{margin-bottom:.6em}
+#tv .meta{opacity:.65;letter-spacing:.1em;text-transform:uppercase;font-size:.9em}
+#tv .row{display:flex;justify-content:space-between;gap:1em;width:100%;text-align:left;padding:.12em .4em;margin-left:-.4em;
+  font:inherit;color:inherit;text-decoration:none;border-radius:2px;text-shadow:inherit}
+#tv .row:hover,#tv .row:focus-visible{background:var(--crt-glow);color:#04110b;text-shadow:none;outline:none}
+#tv .row span:last-child{opacity:.7;white-space:nowrap}
+#tv .btn{display:inline-block;margin-top:.4em;text-decoration:none;padding:.05em .3em}
+#tv .btn:hover{background:var(--crt-glow);color:#04110b;text-shadow:none}
+.glitch{animation:glitch .3s steps(3)}
+@keyframes glitch{0%{opacity:.15;transform:translateX(-8px)}50%{opacity:.8;transform:translateX(5px) skewX(-5deg)}100%{opacity:1;transform:none}}
 
 /* ---------- lo-fi / static version ---------- */
 #lofi{position:fixed;inset:0;overflow:auto;background:#14100d;z-index:30;display:none;padding:80px 16px 60px}
@@ -286,6 +326,7 @@ body.lofi #back{display:none}
 <div class="vignette"></div>
 <div class="grain"></div>
 
+<div id="tv"></div>
 <aside id="panel"><div class="sheet" id="sheet"></div></aside>
 
 <div class="bottom">
@@ -358,13 +399,7 @@ try { DIGEST = JSON.parse(document.getElementById("digest-data").textContent); }
 /* =================================================================
    Below here: the scene. No need to touch it to update content.
    ================================================================= */
-const SECTIONS = {
-  desk:    { x:800,  y:560, z:1 },
-  about:   { x:800,  y:560, z:1.9, cmd:"whoami" },
-  work:    { x:1240, y:650, z:2.6, cmd:"ls ~/work" },
-  posts:   { x:300,  y:650, z:2.6, cmd:"tail digest.log" },
-  online:  { x:1470, y:690, z:3.0, cmd:"ping esmail" }
-};
+const ITEMS = SITE.work.flatMap(g=>g.items.map(it=>Object.assign({group:g.group}, it)));
 const ORDER = ["about","work","posts","online"];
 const ALIAS = { digest:"posts", writing:"posts", certs:"work" };  // old site anchors
 const $ = s => document.querySelector(s);
@@ -422,13 +457,15 @@ $("#nav").innerHTML = ORDER.map(k=>`<button data-go="${k}">${k.toUpperCase()}</b
 
 (function stack(){
   const cols = ["#ffd447","#ff8a5c","#7ad1ff","#9cf0a8","#ff9bd2","#d0c3ff","#ffe7a3"];
-  const all = SITE.work.flatMap(g=>g.items).filter(i=>i.shelf).slice(0,7);
-  $("#stack").innerHTML = all.map((it,i)=>`<div class="disk" style="bottom:${i*24}px;left:${(i%3)*8-6}px;width:${260+(i%2)*20}px;background:${cols[i%cols.length]}">${esc(it.t)}<em>${esc(it.y)}</em></div>`).join("");
+  const all = ITEMS.map((it,i)=>[it,i]).filter(([it])=>it.shelf).slice(0,7);
+  $("#stack").innerHTML = all.map(([it,idx],i)=>`<div class="disk" data-item="${idx}" style="bottom:${i*24}px;left:${(i%3)*8-6}px;width:${260+(i%2)*20}px;background:${cols[i%cols.length]}">${esc(it.t)}<em>${esc(it.y)}</em></div>`).join("");
 })();
 
 (function books(){
   const cols = ["#8c2f22","#2f4a7a","#3f6a3a","#6b4a2a"];
-  $("#books").innerHTML = ["EXPOSIO","MIND THE GAP","DAILY DIGEST","ATT&amp;CK"].map((t,i)=>`<b style="bottom:${i*22}px;left:${(i%2)*6}px;background:${cols[i]}">${t}</b>`).join("");
+  const find = t => ITEMS.findIndex(x=>x.t.startsWith(t));
+  const books = [["EXPOSIO",`data-item="${find("Exposio")}"`],["MIND THE GAP",`data-item="${find("Mind the Gap")}"`],["DAILY DIGEST",'data-go="posts"'],["WHOAMI",'data-go="about"']];
+  $("#books").innerHTML = books.map(([t,a],i)=>`<b ${a} style="bottom:${i*22}px;left:${(i%2)*6}px;background:${cols[i]}">${t}</b>`).join("");
 })();
 
 /* rain */
@@ -470,39 +507,210 @@ function termFor(k){
 }
 
 /* ---- camera ---- */
-let current = "desk";
+const CAM = { desk:{x:800,y:560,z:1}, watch:{x:880,y:640,z:1.22} };
+const SECTIONS = { about:1, work:1, posts:1, online:1 };
+let cam = CAM.desk, tvFit = false, view = {tx:0, ty:0, z:1};
+const SCREEN = {x:800, y:531, w:368, h:248};
+function measureScreen(){
+  const s=$(".screen"), c=$(".crt");
+  SCREEN.w=s.offsetWidth; SCREEN.h=s.offsetHeight;
+  SCREEN.x=c.offsetLeft+s.offsetLeft+SCREEN.w/2; SCREEN.y=c.offsetTop+s.offsetTop+SCREEN.h/2;
+}
 function place(){
-  const vw=innerWidth, vh=innerHeight, s=SECTIONS[current];
-  const base = Math.max(vw/1600, vh/1000);
-  const panelW = current==="desk" || vw<700 ? 0 : $("#panel").offsetWidth;
-  const cx = (vw-panelW)/2, cy = vh/2;
-  let z = base*s.z;
-  // keep the stage covering the screen
-  let tx = cx - s.x*z, ty = cy - s.y*z;
-  tx = Math.min(0, Math.max(vw-1600*z, tx)); ty = Math.min(0, Math.max(vh-1000*z, ty));
+  const vw=innerWidth, vh=innerHeight, base=Math.max(vw/1600, vh/1000);
+  let z, tx, ty;
+  if (tvFit){
+    z = Math.min(vw*0.94/SCREEN.w, (vh-120)/SCREEN.h);
+    tx = vw/2 - SCREEN.x*z; ty = vh/2 + 6 - SCREEN.y*z;
+  } else {
+    z = base*cam.z; tx = vw/2 - cam.x*z; ty = vh/2 - cam.y*z;
+    tx = Math.min(0, Math.max(vw-1600*z, tx)); ty = Math.min(0, Math.max(vh-1000*z, ty));
+  }
+  view = {tx, ty, z};
   $("#stage").style.transform = `translate(${tx}px,${ty}px) scale(${z})`;
+  positionTV();
 }
-function go(k, push=true){
-  k = ALIAS[k] || k;
-  if (!SECTIONS[k]) k="desk";
-  current = k;
-  document.body.classList.toggle("focused", k!=="desk");
-  document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on", b.dataset.go===k));
-  if (k!=="desk"){ $("#sheet").innerHTML = RENDER[k](); $("#panel").scrollTop = 0; }
-  typeTerm(termFor(k));
-  place();
-  if (push) history.replaceState(null,"", k==="desk" ? location.pathname : "#"+k);
+function positionTV(){
+  const {tx,ty,z} = view, tv=$("#tv");
+  const w=SCREEN.w*z, h=SCREEN.h*z;
+  Object.assign(tv.style, { left:(tx+(SCREEN.x-SCREEN.w/2)*z)+"px", top:(ty+(SCREEN.y-SCREEN.h/2)*z)+"px",
+    width:w+"px", height:h+"px", borderRadius:`${22*z}px / ${30*z}px`, fontSize:Math.max(15, Math.min(25, w/34))+"px" });
 }
+function rectInStage(el){
+  const r=el.getBoundingClientRect(), s=$("#stage").getBoundingClientRect(), z=view.z;
+  return { x:(r.left-s.left)/z, y:(r.top-s.top)/z, w:r.width/z, h:r.height/z };
+}
+function setHash(h){ try { history.replaceState(null, "", h ? "#"+h : location.pathname+location.search); } catch(_) {} }
+const wait = ms => new Promise(r=>setTimeout(r, ms));
+
+/* ---- little sound effects (only when sound is on) ---- */
+function sfx(kind){
+  if (!audio || !audio.on) return;
+  const ctx=audio.ctx, t=ctx.currentTime, g=ctx.createGain(); g.connect(ctx.destination);
+  const o=ctx.createOscillator(); o.type="square"; o.connect(g);
+  if (kind==="insert"){ o.frequency.setValueAtTime(70,t); o.frequency.linearRampToValueAtTime(45,t+.35); g.gain.setValueAtTime(.06,t); g.gain.exponentialRampToValueAtTime(.001,t+.4); o.start(t); o.stop(t+.4); }
+  else if (kind==="eject"){ o.frequency.setValueAtTime(45,t); o.frequency.linearRampToValueAtTime(90,t+.3); g.gain.setValueAtTime(.05,t); g.gain.exponentialRampToValueAtTime(.001,t+.35); o.start(t); o.stop(t+.35); }
+  else { o.type="sine"; o.frequency.setValueAtTime(880,t); g.gain.setValueAtTime(.025,t); g.gain.exponentialRampToValueAtTime(.001,t+.08); o.start(t); o.stop(t+.08); }
+}
+
+/* ---- the player: tape flies into the deck, content plays on the monitor ---- */
+const SECTION_TAPES = {
+  about:  { src:()=>$(".notepad"), label:"WHOAMI · ABOUT", color:"#f4ecd9" },
+  work:   { src:()=>$("#stack"),   label:"WORK · ALL TAPES", color:"#ffd447" },
+  posts:  { src:()=>$("#books"),   label:"POSTS · PAPERS & DIGEST", color:"#2f4a7a", ink:"#f8eedc" },
+  online: { src:()=>$(".phone"),   label:"ONLINE · FIND ME", color:"#ddd7cc" }
+};
+let playing = null, busy = false, tcTimer = null;
+
+async function play(spec){
+  if (busy) return; busy = true;
+  try {
+    if (playing) await eject(true);
+    document.body.classList.add("focused");
+    markNav(spec.section || "work");
+    setHash(spec.section || "work");
+    typeTerm(["> insert tape", "  waiting…"]);
+
+    // build the flying tape where the source object sits
+    const src = spec.src, sr = rectInStage(src);
+    const w = Math.min(Math.max(sr.w, 180), 280), h = Math.min(Math.max(sr.h, 22), 26);
+    const x0 = sr.x + sr.w/2 - w/2, y0 = sr.y + sr.h/2 - h/2;
+    const cart = document.createElement("div");
+    cart.className = "cart";
+    cart.innerHTML = `<span>${esc(spec.label)}</span>`;
+    cart.style.cssText = `left:${x0}px;top:${y0}px;width:${w}px;height:${h}px;background:${spec.color};color:${spec.ink||"#111"}`;
+    $("#stage").appendChild(cart);
+    if (spec.hide) src.style.visibility = "hidden";
+    playing = { cart, src: spec.hide ? src : null, spec, keyframes:null };
+
+    cam = CAM.watch; tvFit = false; place();
+
+    const slotX = 700, slotY = 737;                    // deck slot centre (stage px)
+    const dx = slotX - (x0 + w/2), dyA = (slotY - h/2 - 26) - y0;
+    const sx = 200 / w;
+    const kf = [
+      { transform:"translate(0px,0px) rotate(0deg) scale(1,1)", opacity:1 },
+      { transform:`translate(${dx*0.15}px,-90px) rotate(-7deg) scale(1.12,1.12)`, opacity:1, offset:.28 },
+      { transform:`translate(${dx}px,${dyA}px) rotate(0deg) scale(${sx},1)`, opacity:1, offset:.72 },
+      { transform:`translate(${dx}px,${dyA+8}px) rotate(0deg) scale(${sx},1)`, opacity:1, offset:.84 },
+      { transform:`translate(${dx}px,${dyA+26}px) rotate(0deg) scale(${sx},.12)`, opacity:0 }
+    ];
+    playing.keyframes = kf;
+    await cart.animate(kf, { duration:1500, easing:"cubic-bezier(.5,0,.3,1)", fill:"forwards" }).finished;
+
+    sfx("insert");
+    $(".deck").classList.add("loaded");
+    typeTerm(["▶ LOADING", "▮▮▮▮▮▮▮▮▮▮▮▮ 100%"]);
+    await wait(450);
+
+    tvFit = true; place();
+    await wait(1250);
+
+    showTV(spec.view);
+    $("#tv").className = "on";
+    let secs = 0; clearInterval(tcTimer);
+    tcTimer = setInterval(()=>{ secs++; const p=n=>String(n).padStart(2,"0"); const el=$("#tc"); if(el) el.textContent=`${p(secs/3600|0)}:${p(secs/60%60|0)}:${p(secs%60)}`; }, 1000);
+  } finally { busy = false; }
+}
+
+async function eject(fast=false){
+  if (!playing) return;
+  const p = playing; playing = null;
+  clearInterval(tcTimer);
+  const tv = $("#tv");
+  if (tv.classList.contains("on")){ tv.className = "off"; if (!fast) await wait(330); }
+  tv.className = "";
+  $(".deck").classList.remove("loaded");
+  sfx("eject");
+  tvFit = false; cam = CAM.desk;
+  if (!fast){
+    place();
+    await wait(500);
+    try { await p.cart.animate(p.keyframes, { duration:1100, easing:"cubic-bezier(.5,0,.3,1)", fill:"forwards", direction:"reverse" }).finished; } catch(_) {}
+  }
+  p.cart.remove();
+  if (p.src) p.src.style.visibility = "";
+  if (!fast){
+    document.body.classList.remove("focused");
+    markNav("");
+    setHash("");
+    typeTerm(IDLE);
+  }
+}
+async function toDesk(){
+  if (busy) return;
+  if (playing){ busy = true; try { await eject(false); } finally { busy = false; } }
+  else { document.body.classList.remove("focused"); markNav(""); cam = CAM.desk; tvFit=false; place(); }
+}
+function playSection(k){ const t=SECTION_TAPES[k]; if (t) play({ section:k, src:t.src(), label:t.label, color:t.color, ink:t.ink, hide:false, view:{section:k} }); }
+function playItem(i, el){
+  const it = ITEMS[i]; if (!it) return;
+  const cs = getComputedStyle(el);
+  play({ section:"work", src:el, label:it.t, color:cs.backgroundColor, ink:cs.color, hide:true, view:{item:i} });
+}
+
+/* ---- what the monitor shows ---- */
+function tvRow(t, y, attrs){
+  const tag = attrs.href ? "a" : "button";
+  return `<${tag} class="row" ${attrs.href?`href="${esc(attrs.href)}"`:""} ${attrs.item!=null?`data-tvitem="${attrs.item}"`:""}><span>${esc(t)}</span><span>${esc(y)}</span></${tag}>`;
+}
+function tvHTML(v){
+  if (v.item != null){
+    const it = ITEMS[v.item];
+    return `<h2>» ${esc(it.group)}</h2><h1>${esc(it.t)}</h1><p class="meta">${esc(it.y)}</p>${it.d?`<p>${esc(it.d)}</p>`:""}
+      ${it.l?`<a class="btn" href="${esc(it.l)}" target="_blank" rel="noopener">[ ${esc(it.lt||"open")} ↗ ]</a>`:""}`;
+  }
+  const k = v.section;
+  if (k==="about") return `<h1>HI, I'M ${esc(SITE.name.toUpperCase())}.</h1>${SITE.about.map(p=>`<p>${esc(p)}</p>`).join("")}`;
+  if (k==="work") return `<h1>WORK</h1><p class="meta">${ITEMS.length} TAPES · PICK ONE</p>` +
+    SITE.work.map(g=>`<h2>» ${esc(g.group)}</h2>` + g.items.map(it=>tvRow(it.t, it.y, {item:ITEMS.findIndex(x=>x.t===it.t)})).join("")).join("");
+  if (k==="posts") return `<h1>POSTS</h1><h2>» Papers</h2>` + SITE.papers.map(p=>tvRow(p.t, p.y, {href:p.l||null})).join("") +
+    `<h2>» Daily AI &amp; security digest</h2><p class="meta">filed every morning by my agent · trusted sources only</p>` +
+    (DIGEST.length ? DIGEST.map(p=>tvRow(p.t.replace(/^AI & Security Digest\s*[—-]\s*/,"Digest · "), p.y, {href:p.l})).join("") : `<p>The digest list appears on the live site.</p>`);
+  if (k==="online") return `<h1>ONLINE</h1><p class="meta">64 bytes from esmail: reply</p>` + SITE.online.map(([a,b,c])=>tvRow(a, b, {href:c})).join("");
+  return "";
+}
+let tvView = null, tvBackTo = null;
+function showTV(v, from){
+  tvView = v; tvBackTo = from || null;
+  const ch = v.item!=null ? "TAPE "+String(v.item+1).padStart(2,"0") : "CH "+String(ORDER.indexOf(v.section)+1).padStart(2,"0");
+  const tc = $("#tc") ? $("#tc").textContent : "00:00:00";
+  $("#tv").innerHTML = `<div class="osd"><span>▶ PLAY</span><span id="tc">${tc}</span><span>${ch}</span></div>
+    <div class="tvbody glitch" id="tvbody">${tvHTML(v)}</div>
+    <div class="osd bot">${tvBackTo?`<button id="tvBack">◀ BACK</button>`:"<span></span>"}<button id="tvEject">⏏ EJECT · ESC</button></div>`;
+  $("#tvEject").onclick = toDesk;
+  if (tvBackTo) $("#tvBack").onclick = ()=>{ sfx("tick"); showTV(tvBackTo); };
+  typeTerm([]);
+}
+
+/* ---- clicks ---- */
 document.addEventListener("click", e=>{
-  const t = e.target.closest("[data-go]"); if (!t) return;
-  if (document.body.classList.contains("lofi")){ lofiGo(t.dataset.go, true); return; }
-  if (t.classList.contains("hot") && current!=="desk") return;
+  const tvItem = e.target.closest("[data-tvitem]");
+  if (tvItem){ sfx("tick"); showTV({item:+tvItem.dataset.tvitem}, tvView); return; }
+  if (e.target.closest("#tv")) return;
+  const t = e.target.closest("[data-go],[data-item]"); if (!t) return;
+  const lofi = document.body.classList.contains("lofi");
+  if (t.dataset.item != null){
+    if (lofi){ lofiGo("work", true); return; }
+    if (!playing && !busy) playItem(+t.dataset.item, t);
+    return;
+  }
+  if (lofi){ lofiGo(t.dataset.go, true); return; }
+  if (t.classList.contains("hot") && (playing || busy)) return;
   go(t.dataset.go);
 });
-$("#back").onclick = ()=>go("desk");
-$("#logo").onclick = e=>{ e.preventDefault(); document.body.classList.contains("lofi") ? lofiGo("desk", true) : go("desk"); };
-addEventListener("keydown", e=>{ if(e.key==="Escape") go("desk"); });
+function go(k){
+  k = ALIAS[k] || k;
+  if (k === "desk" || !SECTIONS[k]) return toDesk();
+  if (busy) return;
+  if (playing && playing.spec.section === k && !playing.spec.hide) return;
+  playSection(k);
+}
+$("#back").onclick = toDesk;
+$("#logo").onclick = e=>{ e.preventDefault(); document.body.classList.contains("lofi") ? lofiGo("desk", true) : toDesk(); };
+addEventListener("keydown", e=>{ if(e.key==="Escape" && !document.body.classList.contains("lofi")) toDesk(); });
 addEventListener("resize", place);
+
 
 /* ---- lo-fi (static) version ---- */
 function buildLofi(){
@@ -517,9 +725,9 @@ function buildLofi(){
 function markNav(k){ document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on", b.dataset.go===k)); }
 function lofiGo(k, smooth){
   k = ALIAS[k] || k;
-  if (k==="desk"){ $("#lofi").scrollTo({top:0, behavior: smooth?"smooth":"auto"}); markNav(""); history.replaceState(null,"",location.pathname); return; }
+  if (k==="desk"){ $("#lofi").scrollTo({top:0, behavior: smooth?"smooth":"auto"}); markNav(""); setHash(""); return; }
   const sec = document.getElementById("lofi-"+k); if (!sec) return;
-  sec.scrollIntoView({behavior: smooth?"smooth":"auto"}); markNav(k); history.replaceState(null,"","#"+k);
+  sec.scrollIntoView({behavior: smooth?"smooth":"auto"}); markNav(k); setHash(k);
 }
 function setLofi(on){
   document.body.classList.toggle("lofi", on);
@@ -556,12 +764,14 @@ $("#sound").onclick = ()=>{
 
 /* ---- start ---- */
 buildLofi();
+measureScreen();
 let pref=null; try{ pref=localStorage.getItem("lofi"); }catch(_){}
 const startLofi = pref ? pref==="1" : innerWidth<700;
 setLofi(startLofi);
-const startAt = (location.hash||"").slice(1) || "desk";
-go(startAt, false);
-if (startLofi && startAt!=="desk") lofiGo(startAt, false); else if (startLofi) markNav("");
+place(); typeTerm(IDLE);
+const startHash = (location.hash||"").slice(1), startAt = ALIAS[startHash] || startHash;
+if (startLofi){ if (SECTIONS[startAt]) lofiGo(startAt, false); else markNav(""); }
+else if (SECTIONS[startAt]) setTimeout(()=>playSection(startAt), 400);
 </script>
 </body>
 </html>
