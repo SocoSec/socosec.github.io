@@ -28,6 +28,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 #c3d{position:fixed;inset:0;width:100vw;height:100vh;display:block;touch-action:none;outline:none;cursor:grab}
 #c3d.drag{cursor:grabbing}
 #c3d.point{cursor:pointer}
+#cozy{position:fixed;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at 50% 55%,transparent 45%,rgba(20,8,0,.55) 100%),radial-gradient(ellipse at 30% 60%,rgba(255,150,60,.06),transparent 60%)}
+body.lofi #cozy{display:none}
 #loading{position:fixed;inset:0;z-index:25;display:grid;place-items:center;background:#0b0806;transition:opacity .8s}
 #loading.gone{opacity:0;pointer-events:none}
 #loading div{font:20px "VT323",monospace;letter-spacing:.12em;color:#58ffb0;text-shadow:0 0 8px rgba(88,255,176,.7)}
@@ -166,6 +168,7 @@ body.lofi .hdr-tools{display:flex}
 </header>
 
 <canvas id="c3d" tabindex="0" aria-label="A cozy 3D room. Drag to look around, WASD to walk, click objects."></canvas>
+<div id="cozy"></div>
 <div id="loading"><div>▶ WARMING UP THE ROOM…</div></div>
 <div id="enter">CLICK ANYWHERE TO STEP IN · SOUND ON</div>
 <div id="tip"></div>
@@ -271,7 +274,7 @@ const SITE = {
 // Optional real photos: put files in the repo (e.g. photos/me.jpg) and set the paths here.
 SITE.photos = SITE.photos || { me:"photos/me.jpg", tree:"photos/dragon-tree.jpg", mountains:"photos/socotra-highlands.jpg" };
 // The welcome line. To use a recorded voice instead, put an mp3 in the repo and set SITE.voice = "audio/welcome.mp3".
-SITE.greeting = SITE.greeting || "Hey, welcome in! This website belongs to Esmail Abdullah, a security analyst from Socotra, now living in Budapest. Grab a coffee, have a look around, and click on anything that catches your eye.";
+SITE.greeting = SITE.greeting || "Ah, good evening, and welcome. This website belongs to Esmail Abdullah, a security analyst from the island of Socotra, now studying in Budapest. Do make yourself comfortable. Pour yourself a coffee, and have a good look around.";
 SITE.voice = SITE.voice || "";
 
 let DIGEST = [];
@@ -357,8 +360,9 @@ setInterval(()=>{ if (!A.on || document.hidden || !A.ctx) return;
   for (let i=0;i<3;i++) if (Math.random()<.55) setTimeout(()=>{ const t=A.ctx.currentTime; tone("sine", 2200+Math.random()*3400, 1800, t, .035, .012+Math.random()*.02); }, Math.random()*130);
 }, 130);
 // Prefer the natural-sounding neural voices browsers ship (Edge: "Microsoft … Online (Natural)", Chrome: "Google UK English Male")
-const VOICE_PREFS = [/Ryan.*Natural/i, /Thomas.*Natural/i, /Andrew.*Natural/i, /Brian.*Natural/i, /Guy.*Natural/i, /Christopher.*Natural/i, /Eric.*Natural/i,
-  /Natural.*English \(United Kingdom\)/i, /Natural.*English \(United States\)/i, /^Google UK English Male$/i, /Natural/i, /^Google US English$/i, /Daniel/i];
+// British male voices first: they carry the old-professor tone best
+const VOICE_PREFS = [/Thomas.*Natural/i, /Ryan.*Natural/i, /Oliver.*Natural/i, /Alfie.*Natural/i, /Elliot.*Natural/i, /Natural.*English \(United Kingdom\)/i,
+  /^Google UK English Male$/i, /Daniel/i, /George/i, /Brian.*Natural/i, /Christopher.*Natural/i, /Guy.*Natural/i, /Natural/i, /^Google US English$/i];
 function pickVoice(){
   const vs = speechSynthesis.getVoices().filter(v => /^en/i.test(v.lang));
   for (const re of VOICE_PREFS){ const v = vs.find(v => re.test(v.name)); if (v) return v; }
@@ -371,7 +375,8 @@ function greet(){
   const say = () => {
     const u = new SpeechSynthesisUtterance(SITE.greeting); const v = pickVoice();
     if (v){ u.voice = v; u.lang = v.lang; }
-    u.rate = /Natural|Google/i.test(v?.name||"") ? 1 : .95; u.pitch = 1; u.volume = .95;
+    // slower, lower, unhurried: an old academic welcoming a guest
+    u.rate = /Natural/i.test(v?.name||"") ? .86 : .82; u.pitch = /Natural/i.test(v?.name||"") ? .82 : .72; u.volume = .95;
     speechSynthesis.cancel(); speechSynthesis.speak(u);
   };
   if (speechSynthesis.getVoices().length) say();
@@ -598,14 +603,14 @@ async function boot3D(){
   const canvas = $("#c3d");
   const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, preserveDrawingBuffer:true, powerPreference:"high-performance" });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75)); renderer.setSize(innerWidth, innerHeight, false);
-  renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15;
+  renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.02;
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.shadowMap.autoUpdate = false; renderer.shadowMap.needsUpdate = true;
   const scene = new THREE.Scene(); scene.background = new THREE.Color(0x05060c);
-  scene.fog = new THREE.FogExp2(0x1b1a2c, 0.0085);
+  scene.fog = new THREE.FogExp2(0x1d1826, 0.0085);
   const camera = new THREE.PerspectiveCamera(55, innerWidth/innerHeight, 0.02, 400);
   const pmrem = new THREE.PMREMGenerator(renderer); scene.environment = pmrem.fromScene(new RoomEnvironment(), .04).texture;
   const composer = new EffectComposer(renderer); composer.addPass(new RenderPass(scene, camera));
-  const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), .38, .5, .92); composer.addPass(bloom); composer.addPass(new OutputPass());
+  const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), .5, .65, .84); composer.addPass(bloom); composer.addPass(new OutputPass());
   const pickables = [];
   const tag = (obj, label, act) => { obj.traverse(o => { o.userData.pick = { label, act, root:obj }; }); pickables.push(obj); return obj; };
   const add = (geo, m, x, y, z, parent=scene, shadow=true) => { const o = new THREE.Mesh(geo, m); o.position.set(x,y,z); o.castShadow = shadow; o.receiveShadow = true; parent.add(o); return o; };
@@ -723,14 +728,26 @@ async function boot3D(){
   [[WX0-.42], [WX1+.42]].forEach(([cx])=>{ const g=new THREE.PlaneGeometry(.8, 2.55, 40, 1); const p=g.attributes.position; for (let i=0;i<p.count;i++) p.setZ(i, Math.sin(p.getX(i)*30)*.035); g.computeVertexNormals();
     const c=new THREE.Mesh(g, curtainMat); c.position.set(cx, 1.42, -2.9); c.castShadow=true; scene.add(c); });
   box(WX1-WX0+1.9, .03, .03, mat(0x2a1c12,.4,.6), WC, 2.62, -2.9);
+  // fairy lights draped along the curtain rod and down the window sides
+  const fairy = [], bulbGeo = new THREE.SphereGeometry(.011, 10, 8);
+  const fairyMat = () => new THREE.MeshBasicMaterial({ color:0xffc070 });
+  const wire = [];
+  const addBulb = (x,y,z) => { const b = new THREE.Mesh(bulbGeo, fairyMat()); b.position.set(x,y,z); b.userData.ph = Math.random()*6.28; scene.add(b); fairy.push(b); wire.push(new THREE.Vector3(x,y+.012,z)); };
+  for (let k=0;k<3;k++){ const x0 = WX0-.9 + k*(WX1-WX0+1.8)/3, x1 = x0 + (WX1-WX0+1.8)/3;
+    for (let i=0;i<=14;i++){ const u=i/14, x=x0+(x1-x0)*u; addBulb(x, 2.6 - Math.sin(u*Math.PI)*.16, -2.86); } }
+  [WX0-.06, WX1+.06].forEach(x=>{ for (let i=1;i<=10;i++) addBulb(x + Math.sin(i*1.3)*.02, 2.55 - i*.15, -2.88); });
+  scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(wire.slice(0,45)), new THREE.LineBasicMaterial({ color:0x2a2018 })));
+  const fairyGlow1 = new THREE.PointLight(0xffb060, .9, 3.2, 2); fairyGlow1.position.set(WX0, 2.4, -2.6);
+  const fairyGlow2 = new THREE.PointLight(0xffb060, .9, 3.2, 2); fairyGlow2.position.set(WX1, 2.4, -2.6);
+  scene.add(fairyGlow1, fairyGlow2);
 
   /* ---- lights ---- */
-  scene.add(new THREE.HemisphereLight(0x55638f, 0x2a1a10, .45));
-  const moon = new THREE.DirectionalLight(0x8fa0d0, .35); moon.position.set(-2, 6, -10); moon.target.position.set(0,0,0); scene.add(moon, moon.target);
+  scene.add(new THREE.HemisphereLight(0x3d3a55, 0x2a160a, .26));
+  const moon = new THREE.DirectionalLight(0x8fa0d0, .2); moon.position.set(-2, 6, -10); moon.target.position.set(0,0,0); scene.add(moon, moon.target);
   const flashLight = new THREE.DirectionalLight(0xc8d6ff, 0); flashLight.position.set(-3, 8, -12); scene.add(flashLight);
-  const lampLight = new THREE.PointLight(0xffb46b, 5, 7, 2); lampLight.castShadow = true; lampLight.shadow.mapSize.set(1024,1024); lampLight.shadow.bias = -.003; lampLight.shadow.radius = 5;
-  const floorLampLight = new THREE.PointLight(0xffc27a, 5, 8, 2); floorLampLight.position.set(2.55, 1.72, -0.25);
-  const pendant = new THREE.PointLight(0xffd9a0, 3.2, 10, 2); pendant.position.set(0.3, 2.18, 0.6);
+  const lampLight = new THREE.PointLight(0xff9a48, 5.2, 7, 2); lampLight.castShadow = true; lampLight.shadow.mapSize.set(1024,1024); lampLight.shadow.bias = -.003; lampLight.shadow.radius = 5;
+  const floorLampLight = new THREE.PointLight(0xffa458, 4.2, 8, 2); floorLampLight.position.set(2.55, 1.72, -0.25);
+  const pendant = new THREE.PointLight(0xffb86e, 1.6, 9, 2); pendant.position.set(0.3, 2.18, 0.6);
   const tvGlow = new THREE.PointLight(0x58ffb0, .7, 2.4, 2); tvGlow.position.set(-0.42, 1.12, -2.15);
   const pcGlow = new THREE.PointLight(0xffb347, .5, 2.2, 2); pcGlow.position.set(-2.2, 1.06, -0.5);
   scene.add(floorLampLight, pendant, tvGlow, pcGlow);
@@ -835,7 +852,23 @@ async function boot3D(){
   for (let i=0;i<NL;i++){ const a=Math.random()*Math.PI*2, rr=Math.sqrt(Math.random())*rad, h=Math.sqrt(Math.max(0,1-(rr/rad)**2))*.045;
     pp.set(Math.cos(a)*rr, cy-.004+h, Math.sin(a)*rr); e.set((Math.random()-.5)*.9 + Math.sin(a)*rr/rad*.6, 0, (Math.random()-.5)*.9 - Math.cos(a)*rr/rad*.6); q.setFromEuler(e); sc.setScalar(.7+Math.random()*.6); mtx.compose(pp, q, sc); tufts.setMatrixAt(i, mtx); }
   bonsai.add(tufts);
+  // tiny warm lights tucked into the little tree's crown
+  for (let i=0;i<16;i++){ const a=i/16*Math.PI*2+Math.random()*.3, rr=rad*(.55+Math.random()*.45);
+    const b = new THREE.Mesh(new THREE.SphereGeometry(.0045, 8, 6), fairyMat()); b.position.set(Math.cos(a)*rr, cy-.01+Math.random()*.03, Math.sin(a)*rr); b.userData.ph = Math.random()*6.28; bonsai.add(b); fairy.push(b); }
+  const treeGlow = new THREE.PointLight(0xffb060, .55, 1.2, 2); treeGlow.position.set(0, cy+.02, 0); bonsai.add(treeGlow);
   tag(bonsai, "Dragon's blood tree · a little piece of Socotra", { type:"toast", msg:"A tiny dragon's blood tree (Dracaena cinnabari). The real ones only grow on Socotra." });
+  // a candle in a little brass holder
+  const candle = new THREE.Group(); candle.position.set(-0.78, DY, -2.42); scene.add(candle);
+  cyl(.04,.045,.012, mat(0xb08a3a,.3,.9), 0,.006,0, candle, 24);
+  cyl(.022,.022,.075, mat(0xf3ead6,.6,0,{ emissive:0xffa050, emissiveIntensity:.18 }), 0,.05,0, candle, 24);
+  cyl(.0015,.0015,.01, mat(0x111111,.8), 0,.092,0, candle, 6);
+  const flameTex = TEX.glow("rgba(255,190,90,1)");
+  const flame = new THREE.Sprite(new THREE.SpriteMaterial({ map:flameTex, color:0xffd08a, blending:THREE.AdditiveBlending, depthWrite:false, transparent:true }));
+  flame.scale.set(.03,.05,1); flame.position.set(0,.105,0); candle.add(flame);
+  const flameHalo = new THREE.Sprite(new THREE.SpriteMaterial({ map:flameTex, color:0xff9a40, blending:THREE.AdditiveBlending, depthWrite:false, transparent:true, opacity:.35 }));
+  flameHalo.scale.set(.22,.22,1); flameHalo.position.set(0,.105,0); candle.add(flameHalo);
+  const candleLight = new THREE.PointLight(0xff9440, 1.1, 2.2, 2); candleLight.position.set(0,.13,0); candle.add(candleLight);
+  tag(candle, "Candle", { type:"toast", msg:"A candle for the long nights of reading and hacking." });
   // desk lamp
   const lamp = new THREE.Group(); lamp.position.set(-1.33, DY, -2.72); scene.add(lamp);
   const copper = mat(0xa8543a, .35, .6);
@@ -845,6 +878,9 @@ async function boot3D(){
   const bulb = add(new THREE.SphereGeometry(.024,16,12), new THREE.MeshBasicMaterial({ color:0xd9b48a }), .1,.39,.1, lamp, false);
   lamp.add(lampLight); lampLight.position.set(.1,.36,.12);
   tag(lamp, "Desk lamp · switch (L)", { type:"lamp" });
+  const halo = (x,y,z,s,o) => { const h = new THREE.Sprite(new THREE.SpriteMaterial({ map:TEX.glow("rgba(255,170,90,1)"), blending:THREE.AdditiveBlending, depthWrite:false, transparent:true, opacity:o })); h.scale.set(s,s,1); h.position.set(x,y,z); scene.add(h); return h; };
+  const lampHalo = halo(-1.23, DY+.38, -2.62, .8, .13);
+  halo(2.55, 1.72, -0.25, 1.3, .14); halo(.3, 2.12, .6, .8, .1);
   // plant on the floor next to the desk
   const leafTex = TEX.leaf();
   const plant = new THREE.Group(); plant.position.set(-2.25, 0, -2.55); scene.add(plant);
@@ -1099,7 +1135,11 @@ async function boot3D(){
     // dust, steam, flicker
     for (let i=0;i<DN;i++){ dustPos[i*3+1] += Math.sin(t*.3+dustSeed[i])*.0006; dustPos[i*3] += Math.cos(t*.2+dustSeed[i])*.0004; } dustGeo.attributes.position.needsUpdate = true;
     steam.forEach(s=>{ s.userData.t = (s.userData.t + dt*.25) % 1; const k = s.userData.t; s.position.set(mug.position.x + Math.sin(k*6+s.id)*.015, mug.position.y+.11+k*.22, mug.position.z); s.scale.setScalar(.04+k*.08); s.material.opacity = Math.sin(k*Math.PI)*.22; });
-    if (S.lampOn) lampLight.intensity = 5 + Math.sin(t*13)*.04;
+    if (S.lampOn) lampLight.intensity = 5.2 + Math.sin(t*13)*.04;
+    lampHalo.visible = S.lampOn;
+    const fl = .82 + Math.sin(t*9.1)*.08 + Math.sin(t*23.7)*.05 + (Math.random()-.5)*.08;
+    candleLight.intensity = 1.1*fl; flame.scale.set(.028+.004*fl, .045+.012*fl, 1); flame.position.x = Math.sin(t*3.1)*.002;
+    for (const b of fairy){ const k = .7 + .3*Math.sin(t*1.6 + b.userData.ph); b.material.color.setRGB(.9*k, .66*k, .36*k); }
     tvGlow.intensity = .6 + Math.random()*.15;
     // screens + clocks
     if (frameN % 2 === 0){ tvS.tick(); pcS.tick(); }
