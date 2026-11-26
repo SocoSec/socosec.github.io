@@ -210,6 +210,11 @@ body.focused #panel{transform:none}
 #lofi{position:fixed;inset:0;overflow:auto;background:#14100d;z-index:30;display:none;padding:80px 16px 60px}
 body.lofi #lofi{display:block}
 body.lofi #viewport,body.lofi .vignette,body.lofi .grain,body.lofi #panel{display:none}
+body.lofi .top{z-index:40;background:rgba(20,16,13,.94);backdrop-filter:blur(8px);border-bottom:1px solid #2e241c}
+body.lofi .top .logo,body.lofi nav button{text-shadow:none}
+body.lofi .bottom{z-index:40}
+body.lofi #back{display:none}
+#lofi .sheet{scroll-margin-top:84px}
 #lofi .wrap{max-width:720px;margin:0 auto}
 #lofi .hello{font-family:"Archivo Black";font-size:clamp(34px,7vw,56px);line-height:1.05;margin-bottom:14px}
 #lofi .intro{color:var(--dim);font-size:15px;line-height:1.7;margin-bottom:24px}
@@ -369,7 +374,7 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":
 const itemHTML = it => `<div class="item"><div class="hd"><span class="t">${esc(it.t)}</span><span class="y">${esc(it.y)}</span></div>
   ${it.d?`<div class="d">${esc(it.d)}</div>`:""}${it.l&&it.lt?`<a class="l" href="${esc(it.l)}">${esc(it.lt)} →</a>`:""}</div>`;
 const RENDER = {
-  about: () => `<h2>Hi, I'm ${esc(SITE.name)}.</h2><div class="kick">about</div>${SITE.about.map(p=>`<p>${esc(p)}</p>`).join("")}`,
+  about: (lofi) => `<h2>${lofi ? "About" : `Hi, I'm ${esc(SITE.name)}.`}</h2><div class="kick">about</div>${SITE.about.map(p=>`<p>${esc(p)}</p>`).join("")}`,
   work: () => `<h2>Work</h2><div class="kick">experience · research · projects · certs</div>${SITE.work.map(g=>`<h3>${esc(g.group)}</h3>${g.items.map(itemHTML).join("")}`).join("")}`,
   posts: () => {
     const row = w => `<div class="item"><div class="hd">${w.l?`<a class="t" href="${esc(w.l)}">${esc(w.t)}</a>`:`<span class="t">${esc(w.t)}</span>`}<span class="y">${esc(w.y)}</span></div></div>`;
@@ -490,12 +495,12 @@ function go(k, push=true){
 }
 document.addEventListener("click", e=>{
   const t = e.target.closest("[data-go]"); if (!t) return;
-  if (document.body.classList.contains("lofi")){ const sec=document.getElementById("lofi-"+t.dataset.go); if(sec) sec.scrollIntoView({behavior:"smooth"}); return; }
+  if (document.body.classList.contains("lofi")){ lofiGo(t.dataset.go, true); return; }
   if (t.classList.contains("hot") && current!=="desk") return;
   go(t.dataset.go);
 });
 $("#back").onclick = ()=>go("desk");
-$("#logo").onclick = e=>{ e.preventDefault(); go("desk"); };
+$("#logo").onclick = e=>{ e.preventDefault(); document.body.classList.contains("lofi") ? lofiGo("desk", true) : go("desk"); };
 addEventListener("keydown", e=>{ if(e.key==="Escape") go("desk"); });
 addEventListener("resize", place);
 
@@ -503,7 +508,18 @@ addEventListener("resize", place);
 function buildLofi(){
   $("#lofiWrap").innerHTML = `<div class="hello">Hi, I'm ${esc(SITE.name)}.</div><p class="intro">${esc(SITE.intro)}</p>
   <div class="note" id="lofiNote"></div>
-  ${ORDER.map(k=>`<div class="sheet" id="lofi-${k}">${RENDER[k]()}</div>`).join("")}`;
+  ${ORDER.map(k=>`<div class="sheet" id="lofi-${k}">${RENDER[k](true)}</div>`).join("")}`;
+  // highlight the menu item of the section being read
+  const io = new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting && document.body.classList.contains("lofi")) markNav(e.target.id.slice(5)); }),
+    { root: $("#lofi"), rootMargin: "-90px 0px -60% 0px" });
+  ORDER.forEach(k=>io.observe(document.getElementById("lofi-"+k)));
+}
+function markNav(k){ document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on", b.dataset.go===k)); }
+function lofiGo(k, smooth){
+  k = ALIAS[k] || k;
+  if (k==="desk"){ $("#lofi").scrollTo({top:0, behavior: smooth?"smooth":"auto"}); markNav(""); history.replaceState(null,"",location.pathname); return; }
+  const sec = document.getElementById("lofi-"+k); if (!sec) return;
+  sec.scrollIntoView({behavior: smooth?"smooth":"auto"}); markNav(k); history.replaceState(null,"","#"+k);
 }
 function setLofi(on){
   document.body.classList.toggle("lofi", on);
@@ -543,7 +559,9 @@ buildLofi();
 let pref=null; try{ pref=localStorage.getItem("lofi"); }catch(_){}
 const startLofi = pref ? pref==="1" : innerWidth<700;
 setLofi(startLofi);
-go((location.hash||"").slice(1) || "desk", false);
+const startAt = (location.hash||"").slice(1) || "desk";
+go(startAt, false);
+if (startLofi && startAt!=="desk") lofiGo(startAt, false); else if (startLofi) markNav("");
 </script>
 </body>
 </html>
