@@ -31,6 +31,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 #loading{position:fixed;inset:0;z-index:25;display:grid;place-items:center;background:#0b0806;transition:opacity .8s}
 #loading.gone{opacity:0;pointer-events:none}
 #loading div{font:20px "VT323",monospace;letter-spacing:.12em;color:#58ffb0;text-shadow:0 0 8px rgba(88,255,176,.7)}
+#enter{position:fixed;left:50%;bottom:64px;transform:translateX(-50%);z-index:13;font:600 12px var(--mono);letter-spacing:.2em;color:#f3e9d8;background:rgba(10,8,6,.7);border:1px solid rgba(255,255,255,.18);padding:9px 16px;border-radius:999px;pointer-events:none;animation:pulse 2.2s ease-in-out infinite;transition:opacity .5s}
+@keyframes pulse{50%{opacity:.55}}
+#enter.gone,body.lofi #enter,body.focused #enter{opacity:0;animation:none}
 #tip{position:fixed;z-index:14;pointer-events:none;font:600 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;
   background:rgba(8,6,4,.82);color:var(--accent);padding:5px 9px;border-radius:3px;opacity:0;transition:opacity .15s;white-space:nowrap}
 #tip.on{opacity:1}
@@ -164,6 +167,7 @@ body.lofi .hdr-tools{display:flex}
 
 <canvas id="c3d" tabindex="0" aria-label="A cozy 3D room. Drag to look around, WASD to walk, click objects."></canvas>
 <div id="loading"><div>▶ WARMING UP THE ROOM…</div></div>
+<div id="enter">CLICK ANYWHERE TO STEP IN · SOUND ON</div>
 <div id="tip"></div>
 <div id="toast"></div>
 <div id="hint"><b>DRAG</b> look · <b>WASD</b> walk · <b>SCROLL</b> zoom · <b>C</b> computer · <b>T</b> TV · <b>M</b> sip coffee · <b>L</b> lamp</div>
@@ -266,7 +270,9 @@ const SITE = {
 
 // Optional real photos: put files in the repo (e.g. photos/me.jpg) and set the paths here.
 SITE.photos = SITE.photos || { me:"photos/me.jpg", tree:"photos/dragon-tree.jpg", mountains:"photos/socotra-highlands.jpg" };
-SITE.greeting = SITE.greeting || "Hey, welcome in! This room belongs to Esmail Abdullah, a security analyst from Socotra, now living in Budapest. Grab a coffee, look around, and click anything that looks interesting.";
+// The welcome line. To use a recorded voice instead, put an mp3 in the repo and set SITE.voice = "audio/welcome.mp3".
+SITE.greeting = SITE.greeting || "Hey, welcome in! This website belongs to Esmail Abdullah, a security analyst from Socotra, now living in Budapest. Grab a coffee, have a look around, and click on anything that catches your eye.";
+SITE.voice = SITE.voice || "";
 
 let DIGEST = [];
 try { DIGEST = JSON.parse(document.getElementById("digest-data").textContent); } catch (_) {}
@@ -350,14 +356,26 @@ function sfx(kind){
 setInterval(()=>{ if (!A.on || document.hidden || !A.ctx) return;
   for (let i=0;i<3;i++) if (Math.random()<.55) setTimeout(()=>{ const t=A.ctx.currentTime; tone("sine", 2200+Math.random()*3400, 1800, t, .035, .012+Math.random()*.02); }, Math.random()*130);
 }, 130);
+// Prefer the natural-sounding neural voices browsers ship (Edge: "Microsoft … Online (Natural)", Chrome: "Google UK English Male")
+const VOICE_PREFS = [/Ryan.*Natural/i, /Thomas.*Natural/i, /Andrew.*Natural/i, /Brian.*Natural/i, /Guy.*Natural/i, /Christopher.*Natural/i, /Eric.*Natural/i,
+  /Natural.*English \(United Kingdom\)/i, /Natural.*English \(United States\)/i, /^Google UK English Male$/i, /Natural/i, /^Google US English$/i, /Daniel/i];
+function pickVoice(){
+  const vs = speechSynthesis.getVoices().filter(v => /^en/i.test(v.lang));
+  for (const re of VOICE_PREFS){ const v = vs.find(v => re.test(v.name)); if (v) return v; }
+  return vs[0] || null;
+}
 function greet(){
-  if (A.greeted || !("speechSynthesis" in window)) return; A.greeted = true;
+  if (A.greeted) return; A.greeted = true; $("#enter").classList.add("gone");
+  if (SITE.voice){ const a = new Audio(SITE.voice); a.volume = .95; a.play().catch(()=>{}); return; }
+  if (!("speechSynthesis" in window)) return;
   const say = () => {
-    const u = new SpeechSynthesisUtterance(SITE.greeting), vs = speechSynthesis.getVoices();
-    u.voice = vs.find(v=>/^en/i.test(v.lang) && /male|david|daniel|guy|george|ryan|james|mark|christopher|eric/i.test(v.name)) || vs.find(v=>/^en/i.test(v.lang)) || null;
-    u.rate = .97; u.pitch = .95; u.volume = .9; speechSynthesis.cancel(); speechSynthesis.speak(u);
+    const u = new SpeechSynthesisUtterance(SITE.greeting); const v = pickVoice();
+    if (v){ u.voice = v; u.lang = v.lang; }
+    u.rate = /Natural|Google/i.test(v?.name||"") ? 1 : .95; u.pitch = 1; u.volume = .95;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
   };
-  if (speechSynthesis.getVoices().length) say(); else { speechSynthesis.onvoiceschanged = () => { speechSynthesis.onvoiceschanged = null; say(); }; setTimeout(say, 600); }
+  if (speechSynthesis.getVoices().length) say();
+  else { let done = false; speechSynthesis.onvoiceschanged = () => { if (done) return; done = true; speechSynthesis.onvoiceschanged = null; say(); }; setTimeout(()=>{ if (!done){ done = true; say(); } }, 900); }
 }
 function setSound(on){
   audioInit(); A.ctx.resume();
@@ -365,7 +383,7 @@ function setSound(on){
   if (on) greet(); else if ("speechSynthesis" in window) speechSynthesis.cancel();
   $("#sound").textContent = on ? "♪ SOUND ON" : "♪ SOUND OFF"; $("#sound").classList.toggle("lit", on);
 }
-$("#sound").onclick = () => setSound(!A.on);
+$("#sound").onclick = () => { A.userChose = true; $("#enter").classList.add("gone"); setSound(!A.on); };
 
 /* =================================================================
    THE SCREENS' CONTENT (HTML laid exactly over the 3D screen)
@@ -972,7 +990,9 @@ async function boot3D(){
     canvas.classList.toggle("point", !!p);
     if (p){ tip.textContent = p.label; tip.style.left = (e.clientX+14)+"px"; tip.style.top = (e.clientY+16)+"px"; tip.classList.add("on"); } else tip.classList.remove("on");
   });
-  canvas.addEventListener("pointerup", e => { const d = down; down = null; canvas.classList.remove("drag"); if (!d || d.moved || S.mode !== "room") return; const p = pickAt(e.clientX, e.clientY); if (p) act(p.act, p.root); });
+  canvas.addEventListener("pointerup", e => { const d = down; down = null; canvas.classList.remove("drag"); if (!d || d.moved || S.mode !== "room") return; const p = pickAt(e.clientX, e.clientY);
+    if (!A.greeted && !A.userChose){ setSound(true); if (!p){ go("about"); return; } }
+    if (p) act(p.act, p.root); });
   canvas.addEventListener("wheel", e => { e.preventDefault(); if (S.mode !== "room") return; camera.fov = THREE.MathUtils.clamp(camera.fov + e.deltaY*.02, 28, 70); camera.updateProjectionMatrix(); }, { passive:false });
   addEventListener("keydown", e => { if (document.body.classList.contains("lofi") || e.target.closest && e.target.closest("input,textarea")) return; S.keys[e.key.toLowerCase()] = true;
     const k = e.key.toLowerCase();
