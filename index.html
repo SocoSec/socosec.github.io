@@ -1,83 +1,549 @@
 ---
-layout: default
+layout: null
 ---
-<section class="hero">
-  <p class="prompt">~/{{ site.author.github }} <span class="cursor">▊</span></p>
-  <h1 class="hero-name">{{ site.author.name }}</h1>
-  <p class="hero-thesis">Cybersecurity engineer working across <strong>security operations</strong> and <strong>offensive security</strong> — M.S. Cybersecurity student at Óbuda University, Budapest. This site keeps watch while I sleep: an agent reads trusted sources every day and files a short digest below.</p>
-</section>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Esmail Abdullah</title>
+<meta name="description" content="Esmail Abdullah: cybersecurity engineer, red/purple teaming, autonomous security agents.">
+<link rel="icon" type="image/svg+xml" href="{{ '/assets/favicon.svg' | relative_url }}">
+<link rel="icon" type="image/png" sizes="192x192" href="{{ '/assets/favicon-192.png' | relative_url }}">
+<link rel="apple-touch-icon" href="{{ '/assets/apple-touch-icon.png' | relative_url }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=JetBrains+Mono:wght@400;600&family=VT323&display=swap" rel="stylesheet">
+<style>
+/* ================================================================
+   EDIT YOUR CONTENT IN THE <script> "SITE" OBJECT AT THE BOTTOM.
+   ================================================================ */
+:root{
+  --ink:#f3e9d8; --dim:#b9a98f; --paper:#f4ecd9; --paper-ink:#2b2418;
+  --accent:#ffb347; --neon:#4dffb8; --crt:#0b2a1f; --crt-glow:#58ffb0;
+  --wall:#1a1310; --wood:#5a3a22;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#0d0907;color:var(--ink);font-family:var(--mono);overflow:hidden}
+a{color:inherit}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
-<section id="work" class="section">
-  <h2 class="section-title"><span class="tick"></span>Selected work</h2>
-  <div class="work-grid">
-    <div class="work-card">
-      <p class="work-kicker">Infrastructure</p>
-      <h3>Multi-Service Linux Server</h3>
-      <p>A complete Linux-based IT infrastructure: central user management, file sharing, a full mail system (Postfix + Dovecot), HTTPS web hosting, automated backups, and client integration. Built at Óbuda University.</p>
-      <p class="work-links"><a href="https://github.com/SocoSec">Code</a></p>
+/* ---------- top bar ---------- */
+.top{position:fixed;inset:0 0 auto 0;display:flex;justify-content:space-between;align-items:center;
+  padding:18px 26px;z-index:20;pointer-events:none}
+.logo{font-family:"Archivo Black",sans-serif;letter-spacing:.06em;font-size:15px;pointer-events:auto;text-decoration:none;
+  text-shadow:0 1px 8px #000}
+nav{display:flex;gap:6px;pointer-events:auto}
+nav button{font-size:19px;letter-spacing:.14em;padding:4px 12px;border-radius:4px;color:#e9dccb;
+  text-shadow:0 1px 8px #000;transition:background .2s,color .2s}
+nav button:hover{background:rgba(255,255,255,.08)}
+nav button.on{background:var(--paper);color:#111;text-shadow:none}
+
+/* ---------- bottom bar ---------- */
+.bottom{position:fixed;right:18px;bottom:16px;display:flex;gap:8px;z-index:20}
+.chip{font-size:12px;letter-spacing:.12em;padding:7px 13px;border-radius:999px;background:rgba(10,8,6,.78);
+  border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(6px)}
+.chip:hover{border-color:var(--accent)}
+.chip.lit{border-color:var(--accent);color:var(--accent)}
+#back{display:none}
+body.focused #back{display:inline-block}
+
+/* ---------- stage / camera ---------- */
+#viewport{position:fixed;inset:0;overflow:hidden}
+#stage{position:absolute;left:0;top:0;width:1600px;height:1000px;transform-origin:0 0;
+  transition:transform 1.25s cubic-bezier(.65,0,.25,1)}
+.vignette{position:fixed;inset:0;pointer-events:none;z-index:5;
+  background:radial-gradient(ellipse at 50% 55%,transparent 45%,rgba(0,0,0,.65) 100%)}
+.grain{position:fixed;inset:-50%;pointer-events:none;z-index:6;opacity:.07;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:grain 1s steps(4) infinite}
+@keyframes grain{0%{transform:translate(0,0)}25%{transform:translate(-3%,2%)}50%{transform:translate(2%,-3%)}75%{transform:translate(-2%,-1%)}}
+
+.wall{position:absolute;inset:0;background:
+  radial-gradient(ellipse 700px 520px at 230px 560px,rgba(255,170,80,.22),transparent 70%),
+  linear-gradient(#22191400,#22191400),
+  repeating-linear-gradient(90deg,#1d1511 0 70px,#1a130f 70px 140px);}
+
+/* window */
+.window{position:absolute;left:330px;top:40px;width:900px;height:560px;background:#0a0d16;
+  border:22px solid #3d2a1c;border-radius:3px;box-shadow:inset 0 0 60px #000,0 10px 40px rgba(0,0,0,.6);overflow:hidden}
+.window svg{position:absolute;inset:0;width:100%;height:100%}
+.window canvas{position:absolute;inset:0;width:100%;height:100%}
+.mullion-v{position:absolute;left:50%;top:0;bottom:0;width:18px;margin-left:-9px;background:#3d2a1c;box-shadow:0 0 10px #000}
+.mullion-h{position:absolute;left:0;right:0;top:36%;height:14px;background:#3d2a1c;box-shadow:0 0 10px #000}
+.glass{position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,.05),transparent 40%,rgba(255,255,255,.03) 60%,transparent)}
+.sill{position:absolute;left:300px;top:595px;width:960px;height:22px;background:linear-gradient(#5b3e28,#3a2717);border-radius:2px;box-shadow:0 8px 20px rgba(0,0,0,.6)}
+
+.curtain{position:absolute;top:0;height:720px;width:170px;
+  background:repeating-linear-gradient(90deg,#6a4a3a 0 18px,#4d3428 18px 34px,#5e4132 34px 50px);
+  box-shadow:inset 0 -60px 80px rgba(0,0,0,.5),0 0 40px rgba(0,0,0,.6)}
+.curtain.l{left:220px;border-radius:0 0 30px 0}
+.curtain.r{left:1190px;border-radius:0 0 0 30px}
+
+/* poster */
+.poster{position:absolute;left:1390px;top:70px;width:180px;height:260px;background:#1b2a6b;transform:rotate(1.5deg);
+  box-shadow:0 10px 30px rgba(0,0,0,.6);padding:16px 14px;font-family:"Archivo Black";color:#ffd447;overflow:hidden}
+.poster b{display:block;font-size:30px;line-height:.95}
+.poster small{display:block;font-family:var(--mono);font-size:9px;color:#d0d8ff;margin-top:10px;line-height:1.5}
+.poster i{position:absolute;right:-30px;bottom:30px;width:150px;height:150px;border:2px dashed rgba(255,212,71,.5);border-radius:50%}
+
+/* desk */
+.desk{position:absolute;left:-40px;top:690px;width:1680px;height:340px;
+  background:linear-gradient(#7a5233,#5a3a22 30%,#3f2816);box-shadow:0 -6px 18px rgba(0,0,0,.5)}
+.desk::before{content:"";position:absolute;inset:0;opacity:.25;
+  background:repeating-linear-gradient(2deg,transparent 0 9px,rgba(0,0,0,.35) 9px 10px,transparent 10px 23px)}
+.desk-edge{position:absolute;left:-40px;top:690px;width:1680px;height:10px;background:#8c6040}
+
+/* lamp */
+.lamp{position:absolute;left:130px;top:430px;width:200px;height:300px}
+.lamp .shade{position:absolute;left:30px;top:0;width:140px;height:85px;background:linear-gradient(#a8543a,#7a3424);
+  clip-path:polygon(28% 0,72% 0,100% 100%,0 100%);}
+.lamp .bulb{position:absolute;left:62px;top:70px;width:76px;height:22px;border-radius:50%;background:#ffe2a8;
+  box-shadow:0 0 40px 20px rgba(255,190,100,.55),0 0 160px 80px rgba(255,170,80,.25)}
+.lamp .arm{position:absolute;left:96px;top:85px;width:8px;height:180px;background:#6e2f22;transform:rotate(8deg);transform-origin:top}
+.lamp .base{position:absolute;left:40px;top:262px;width:130px;height:26px;border-radius:50%;background:#7a3424;box-shadow:0 8px 14px rgba(0,0,0,.6)}
+.lightpool{position:absolute;left:0;top:640px;width:700px;height:260px;border-radius:50%;
+  background:radial-gradient(ellipse,rgba(255,190,110,.3),transparent 65%);pointer-events:none}
+
+/* plant */
+.plant{position:absolute;left:10px;top:520px;width:150px;height:220px}
+.plant .pot{position:absolute;left:20px;bottom:0;width:110px;height:95px;background:linear-gradient(90deg,#b4674a,#d8896a,#9c5038);
+  border-radius:8px 8px 30px 30px}
+.plant span{position:absolute;width:60px;height:110px;border-radius:0 100% 0 100%;background:linear-gradient(135deg,#3f7a43,#1f4a26);
+  transform-origin:bottom left}
+
+/* CRT */
+.crt{position:absolute;left:590px;top:385px;width:420px;height:330px;background:linear-gradient(#2d2a27,#1c1a18);
+  border-radius:16px;box-shadow:0 22px 40px rgba(0,0,0,.7),inset 0 2px 0 rgba(255,255,255,.08);padding:22px 26px 60px}
+.crt .brand{position:absolute;left:28px;top:5px;font-size:9px;letter-spacing:.2em;color:#8d857b}
+.crt .model{position:absolute;right:28px;top:5px;font-size:9px;color:#8d857b;font-style:italic}
+.screen{position:relative;width:100%;height:100%;border-radius:22px/30px;background:radial-gradient(ellipse at center,#0f3a2a,#06160f 85%);
+  overflow:hidden;box-shadow:inset 0 0 40px #000,0 0 50px rgba(88,255,176,.18);
+  font-family:"VT323",monospace;font-size:21px;line-height:1.05;color:var(--crt-glow);padding:16px 18px;text-shadow:0 0 6px rgba(88,255,176,.8)}
+.screen::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(transparent 0 2px,rgba(0,0,0,.28) 2px 3px);animation:flick .12s infinite}
+@keyframes flick{50%{opacity:.85}}
+#term{white-space:pre-wrap}
+.cursor{display:inline-block;width:10px;height:18px;background:var(--crt-glow);vertical-align:-3px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.crt .knobs{position:absolute;bottom:16px;left:26px;right:26px;display:flex;gap:9px;align-items:center}
+.crt .knobs i{width:24px;height:10px;background:#111;border-radius:2px}
+.crt .knobs b{margin-left:auto;width:16px;height:16px;border-radius:50%;background:#3b3733;box-shadow:inset 0 0 3px #000}
+.crt .led{width:6px;height:6px;border-radius:50%;background:#4dff7a;box-shadow:0 0 8px #4dff7a}
+.deck{position:absolute;left:570px;top:712px;width:460px;height:52px;background:linear-gradient(#222,#141414);border-radius:4px;
+  box-shadow:0 12px 20px rgba(0,0,0,.7)}
+.deck .clock{position:absolute;right:60px;top:14px;font-family:"VT323";font-size:22px;color:#4dffb8;text-shadow:0 0 8px #4dffb8;
+  background:#020a06;padding:0 8px;border-radius:3px}
+.deck .slot{position:absolute;left:30px;top:20px;width:200px;height:10px;background:#000;border-radius:2px}
+
+/* disk stack (work) */
+.stack{position:absolute;left:1090px;top:560px;width:300px;height:170px}
+.disk{position:absolute;height:24px;border-radius:2px;display:flex;align-items:center;gap:8px;padding:0 10px;
+  font-size:10px;font-weight:600;letter-spacing:.08em;color:#111;text-transform:uppercase;
+  box-shadow:0 3px 0 rgba(0,0,0,.35),0 6px 10px rgba(0,0,0,.4);white-space:nowrap;overflow:hidden}
+.disk::before{content:"";width:16px;height:12px;background:rgba(0,0,0,.75);border-radius:1px;flex:none}
+.disk em{margin-left:auto;font-style:normal;font-weight:400;opacity:.7;font-size:8px}
+
+/* notepad (about) */
+.notepad{position:absolute;left:1050px;top:770px;width:300px;height:190px;background:var(--paper);transform:rotate(-6deg);
+  box-shadow:0 14px 24px rgba(0,0,0,.6);padding:18px 22px;color:var(--paper-ink);font-size:12px;line-height:1.7;
+  background-image:repeating-linear-gradient(transparent 0 19px,#c7b99a 19px 20px)}
+.notepad::before{content:"";position:absolute;left:0;right:0;top:0;height:14px;background:#8c2f22}
+.notepad p{font-family:"VT323";font-size:20px;line-height:20px;margin-top:6px}
+
+.mug{position:absolute;left:400px;top:760px;width:90px;height:110px;background:linear-gradient(90deg,#d9d3c9,#fff 40%,#bdb6ab);
+  border-radius:4px 4px 16px 16px;box-shadow:0 14px 18px rgba(0,0,0,.5)}
+.mug::after{content:"";position:absolute;right:-30px;top:22px;width:38px;height:50px;border:10px solid #e0dacf;border-left:0;border-radius:0 26px 26px 0}
+.mug::before{content:"";position:absolute;left:6px;right:6px;top:4px;height:12px;border-radius:50%;background:#3a2214}
+.steam{position:absolute;left:420px;top:680px;width:50px;height:80px;pointer-events:none}
+.steam i{position:absolute;bottom:0;width:8px;height:40px;border-radius:50%;background:rgba(255,255,255,.18);filter:blur(4px);animation:steam 3.5s infinite}
+@keyframes steam{0%{transform:translateY(0) scaleX(1);opacity:0}30%{opacity:1}100%{transform:translateY(-60px) scaleX(2.4);opacity:0}}
+
+.keyboard{position:absolute;left:600px;top:830px;width:430px;height:90px;background:#2a2725;border-radius:8px;transform:perspective(500px) rotateX(35deg);
+  box-shadow:0 14px 18px rgba(0,0,0,.6);background-image:radial-gradient(#4a4642 40%,transparent 41%);background-size:22px 22px;background-position:6px 6px}
+
+/* phone (online) */
+.phone{position:absolute;left:1400px;top:640px;width:150px;height:90px}
+.phone .body{position:absolute;bottom:0;width:150px;height:62px;background:linear-gradient(#e7e2d8,#bfb8ab);border-radius:10px 10px 6px 6px;
+  box-shadow:0 10px 16px rgba(0,0,0,.6)}
+.phone .hand{position:absolute;left:-6px;top:0;width:162px;height:30px;background:#ddd7cc;border-radius:30px 30px 8px 8px;box-shadow:0 4px 6px rgba(0,0,0,.4)}
+.phone .pad{position:absolute;left:40px;bottom:10px;width:70px;height:34px;background-image:radial-gradient(#8a8378 35%,transparent 36%);background-size:14px 12px}
+
+/* books (writing) */
+.books{position:absolute;left:220px;top:600px;width:160px;height:95px}
+.books b{position:absolute;bottom:0;width:150px;height:22px;border-radius:2px;font-size:9px;letter-spacing:.1em;color:#f8eedc;
+  display:flex;align-items:center;padding-left:10px;box-shadow:0 3px 6px rgba(0,0,0,.5)}
+
+/* hotspots */
+.hot{cursor:pointer;transition:filter .25s}
+.hot:hover{filter:brightness(1.25) drop-shadow(0 0 14px rgba(255,190,110,.55))}
+body.focused .hot{cursor:default}
+.tag{position:absolute;font-size:10px;letter-spacing:.16em;padding:3px 8px;border-radius:3px;background:rgba(0,0,0,.7);color:var(--accent);
+  opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap}
+.hot:hover + .tag{opacity:1}
+body.focused .tag{display:none}
+
+/* ---------- panel ---------- */
+#panel{position:fixed;top:0;right:0;bottom:0;width:min(560px,46vw);z-index:15;padding:84px 26px 80px;overflow:auto;
+  transform:translateX(105%);transition:transform .7s cubic-bezier(.65,0,.25,1) .25s;scrollbar-width:thin}
+body.focused #panel{transform:none}
+.sheet{background:var(--paper);color:var(--paper-ink);border-radius:3px;padding:30px 32px 34px;box-shadow:0 30px 60px rgba(0,0,0,.6);
+  position:relative}
+.sheet::before{content:"";position:absolute;left:0;right:0;top:0;height:8px;background:#8c2f22;border-radius:3px 3px 0 0}
+.sheet h2{font-family:"Archivo Black";font-size:34px;letter-spacing:.01em;margin-bottom:4px}
+.sheet .kick{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#8a6d45;margin-bottom:20px}
+.sheet h3{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8c2f22;margin:26px 0 8px;border-bottom:1px dashed #c7b99a;padding-bottom:6px}
+.sheet p{font-size:13.5px;line-height:1.7;margin-bottom:12px}
+.item{padding:12px 0;border-bottom:1px solid #e2d6bb}
+.item:last-child{border-bottom:0}
+.item .hd{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.item .t{font-weight:600;font-size:14.5px}
+.item .y{font-size:11.5px;color:#8a6d45;white-space:nowrap}
+.item .d{font-size:13px;line-height:1.6;margin-top:4px;color:#4a3f2f}
+.item .l{font-size:12px;margin-top:4px;display:inline-block;color:#8c2f22}
+.links a{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #e2d6bb;text-decoration:none;font-size:14px}
+.links a:hover{color:#8c2f22}
+.links a span:last-child{color:#8a6d45}
+
+/* ---------- lo-fi / static version ---------- */
+#lofi{position:fixed;inset:0;overflow:auto;background:#14100d;z-index:30;display:none;padding:80px 16px 60px}
+body.lofi #lofi{display:block}
+body.lofi #viewport,body.lofi .vignette,body.lofi .grain,body.lofi #panel{display:none}
+#lofi .wrap{max-width:720px;margin:0 auto}
+#lofi .hello{font-family:"Archivo Black";font-size:clamp(34px,7vw,56px);line-height:1.05;margin-bottom:14px}
+#lofi .intro{color:var(--dim);font-size:15px;line-height:1.7;margin-bottom:24px}
+#lofi .note{font-size:12.5px;line-height:1.6;color:var(--dim);border:1px dashed #4a3a2c;border-radius:6px;padding:12px 14px;margin-bottom:30px}
+#lofi .note button{text-decoration:underline;color:var(--accent)}
+#lofi .sheet{margin-bottom:22px}
+
+@media (max-width:700px){
+  .top{padding:14px 16px}
+  nav button{font-size:13px;padding:4px 7px;letter-spacing:.08em}
+  .logo{font-size:12px}
+  #panel{width:100vw;padding:70px 16px 80px}
+  .bottom{right:10px;left:10px;justify-content:flex-end;flex-wrap:wrap}
+}
+@media (prefers-reduced-motion:reduce){#stage,#panel{transition:none}.grain,.steam i{animation:none}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <a class="logo" href="#" id="logo">ESMAIL ABDULLAH</a>
+  <nav id="nav"></nav>
+</header>
+
+<div id="viewport">
+  <div id="stage">
+    <div class="wall"></div>
+    <div class="window">
+      <svg id="city" viewBox="0 0 900 560" preserveAspectRatio="xMidYMax slice"></svg>
+      <canvas id="rain"></canvas>
+      <div class="glass"></div>
+      <div class="mullion-v"></div><div class="mullion-h"></div>
     </div>
-    <div class="work-card">
-      <p class="work-kicker">Hackathon · Oct 2025</p>
-      <h3>EU Cyber Capability Marketplace</h3>
-      <p>Prototype platform for a seven-country EU network to share cyber ranges and red-teaming expertise, with an AI-enhanced matching engine to optimize cross-border collaboration. Built in 3 days at the European Cybersecurity Hackathon.</p>
-      <p class="work-links"><a href="https://github.com/SocoSec">Write-up</a></p>
+    <div class="sill"></div>
+    <div class="curtain l"></div><div class="curtain r"></div>
+
+    <div class="poster"><b>CAPTURE<br>THE<br>FLAG</b><small>NIGHT 0x01 · 22:00 TILL ROOT<br>BRING YOUR OWN SHELL</small><i></i></div>
+
+    <div class="desk"></div><div class="desk-edge"></div>
+    <div class="lightpool"></div>
+
+    <div class="plant" id="plant"><div class="pot"></div></div>
+    <div class="lamp"><div class="arm"></div><div class="shade"></div><div class="bulb"></div><div class="base"></div></div>
+
+    <div class="books hot" data-go="posts" id="books"></div>
+    <div class="tag" style="left:240px;top:575px">POSTS</div>
+
+    <div class="mug"></div>
+    <div class="steam"><i style="left:4px"></i><i style="left:20px;animation-delay:1.2s"></i><i style="left:34px;animation-delay:2.3s"></i></div>
+
+    <div class="crt hot" data-go="about">
+      <span class="brand">SOCOSEC</span><span class="model">Nightwatch</span>
+      <div class="screen"><span id="term"></span><span class="cursor"></span></div>
+      <div class="knobs"><span class="led"></span><i></i><i></i><i></i><i></i><b></b><b></b></div>
     </div>
-    <div class="work-card">
-      <p class="work-kicker">Network engineering</p>
-      <h3>Enterprise Network & Telephony Design</h3>
-      <p>Engineered the full network for a 4-level, 27-office facility: redundant dual-switch backbone, floor-specific PoE access, building-wide wireless, IP surveillance, and a PBX design with a migration path to IP telephony.</p>
-      <p class="work-links"><a href="#about">Context</a></p>
-    </div>
-    <div class="work-card">
-      <p class="work-kicker">Automation</p>
-      <h3>This Site's News Agent</h3>
-      <p>A Python agent on GitHub Actions that curates the daily digest below — allowlisted sources only, deduplicated, every item linked to its original publisher.</p>
-      <p class="work-links"><a href="https://github.com/SocoSec/socosec.github.io">Code</a></p>
-    </div>
-    <div class="work-card">
-      <p class="work-kicker">Red-team tooling</p>
-      <h3>recontrack</h3>
-      <p>A scope-aware recon engagement tracker (Python CLI). Imports real nmap, httpx, and subdomain output, enforces engagement scope fail-closed so out-of-scope assets are flagged and withheld, and tracks findings by severity. Standard library only, tested.</p>
-      <p class="work-links"><a href="https://github.com/SocoSec/recontrack">Code</a></p>
-    </div>
+    <div class="tag" style="left:745px;top:360px">ABOUT</div>
+    <div class="deck"><div class="slot"></div><div class="clock" id="clock">00:00</div></div>
+    <div class="keyboard"></div>
+
+    <div class="stack hot" data-go="work" id="stack"></div>
+    <div class="tag" style="left:1200px;top:535px">WORK</div>
+
+    <div class="notepad hot" data-go="about"><p>todo:<br>- pop the root shell<br>- write it up<br>- sleep (optional)</p></div>
+
+    <div class="phone hot" data-go="online"><div class="hand"></div><div class="body"><div class="pad"></div></div></div>
+    <div class="tag" style="left:1425px;top:615px">ONLINE</div>
   </div>
-</section> 
-<section id="certs" class="section">
-  <h2 class="section-title"><span class="tick"></span>Certifications</h2>
-  <div class="cert-grid">
+</div>
+<div class="vignette"></div>
+<div class="grain"></div>
 
-    <a class="cert-card" href="https://www.credly.com/badges/46bfff47-b3fa-444c-8eb8-c10159d0b27a/public_url" target="_blank" rel="noopener">
-      <p class="cert-issuer">Google · Coursera</p>
-      <h3>Google Cybersecurity Professional Certificate</h3>
-      <p class="cert-desc">Foundational SOC skills: threat and vulnerability identification, and using Python, Linux, SQL, SIEM tools, and IDS to detect and mitigate attacks.</p>
-      <p class="cert-verify">Verify on Credly →</p>
-    </a>
+<aside id="panel"><div class="sheet" id="sheet"></div></aside>
 
-    <div class="cert-card cert-soon">
-      <p class="cert-issuer">In progress</p>
-      <h3>More certifications coming</h3>
-      <p class="cert-desc">Additional credentials in security operations and offensive security are on the way.</p>
-    </div>
+<div class="bottom">
+  <button class="chip" id="back">BACK TO THE DESK · ESC</button>
+  <button class="chip" id="sound">♪ SOUND OFF</button>
+  <button class="chip" id="lofiBtn">▤ LO-FI</button>
+</div>
 
-  </div>
-</section>
-<section id="digest" class="section">
-  <h2 class="section-title"><span class="dot-live" title="Updated daily by the news agent"></span>Daily digest <span class="section-sub">AI &amp; security news, auto-curated from trusted sources · latest 10 kept</span></h2>
-  {% if site.posts.size == 0 %}
-  <p class="feed-empty">No digests yet. The agent files its first post after its first scheduled run — or trigger it manually from the Actions tab.</p>
-  {% endif %}
-  <ol class="feed">
-    {% for post in site.posts limit: 30 %}
-    <li class="feed-row">
-      <span class="stamp">{{ post.date | date: "%Y-%m-%d" }}</span>
-      <span class="feed-tags">{% for tag in post.tags %}<span class="tag">{{ tag }}</span>{% endfor %}</span>
-      <a class="feed-title" href="{{ post.url | relative_url }}">{{ post.title }}</a>
-    </li>
-    {% endfor %}
-  </ol>
-</section>
+<div id="lofi"><div class="wrap" id="lofiWrap"></div></div>
 
-<section id="about" class="section">
-  <h2 class="section-title"><span class="tick"></span>About</h2>
-  <p class="about-text">I'm a cybersecurity engineer from Socotra, Yemen, currently in Budapest on a Stipendium Hungaricum scholarship for my M.S. in Cybersecurity at Óbuda University (4.83/5.0 first semester). Before that: a dual B.Sc. in Software Engineering (AASTMT &amp; University of Northampton, First Class Honours), two years as a Network and Information Security Specialist at Al Muthalath Al Sharqi Holding, and penetration testing training at Security Meter Academy in Cairo. I work with SIEM tools, IDS, packet analysis, and the MITRE ATT&amp;CK framework on the defensive side, and network and web-app penetration testing on the offensive side — with Python, Java, Go, and C++ underneath. Certifications include Certified Cyber Security Analyst (Cyberwarfare Labs), Google Cybersecurity Professional, CCNA, and Cyber Threat Hunting (Infosec). The digest above is generated daily by a small agent I run on GitHub Actions — allowlisted sources only, always linking to the original report.</p>
-</section>
+<script type="application/json" id="digest-data">[{% for post in site.posts limit: 30 %}{"t":{{ post.title | jsonify }},"y":{{ post.date | date: "%d %b %Y" | jsonify }},"l":{{ post.url | relative_url | jsonify }}}{% unless forloop.last %},{% endunless %}{% endfor %}]</script>
+<script>
+/* =================================================================
+   YOUR CONTENT — edit freely. Links set to "#" are placeholders.
+   ================================================================= */
+const SITE = {
+  name: "Esmail",
+  handle: "socosec",
+  intro: "Cybersecurity engineer from Socotra, Yemen, now in Budapest doing an MSc at Óbuda University. I work across security operations and offensive security, and I build agents that do both.",
+  about: [
+    "I'm a cybersecurity engineer from Socotra, Yemen, currently in Budapest on a Stipendium Hungaricum scholarship for my MSc in Cybersecurity Engineering at Óbuda University (4.83/5.0 first semester).",
+    "Before that: a dual B.Sc. in Software Engineering (AASTMT & University of Northampton, First Class Honours), two years as a Network and Information Security Specialist at Al Muthalath Al Sharqi Holding, and penetration testing training at Security Meter Academy in Cairo.",
+    "On the defensive side I work with SIEM tools, IDS, packet analysis and MITRE ATT&CK; on the offensive side, network and web-app penetration testing. Python, Java, Go and C++ underneath.",
+    "Right now I'm building Cyber-AGI, an autonomous security agent that runs scoped engagements, reflects on its mistakes and wastes fewer steps over time, alongside my own purple-team lab and an OSCP-style practice range.",
+    "This site also keeps watch while I sleep: a small agent reads trusted sources every morning and files the AI & security digest you'll find under Posts."
+  ],
+  work: [
+    { group: "Experience & education", items: [
+      { t:"MSc Cybersecurity Engineering · Óbuda University", y:"now", d:"Budapest, on a Stipendium Hungaricum scholarship. Planned visiting thesis stay in a Swiss security lab from February 2027." },
+      { t:"Network & Information Security Specialist · Al Muthalath Al Sharqi Holding", y:"2 years", d:"Network and information security for the group." },
+      { t:"Penetration testing training · Security Meter Academy", y:"Cairo", d:"" },
+      { t:"B.Sc. Software Engineering · AASTMT & University of Northampton", y:"First Class", d:"Dual degree." }
+    ]},
+    { group: "Research & labs", items: [
+      { t:"Cyber-AGI", y:"2026–now", shelf:1, d:"Autonomous security agent: blue-team triage, a red-team operator over a kill-chain state machine with a critic that verifies every claimed shell, and a memory loop that turns past engagements into lessons. Wired to CTF benchmarks in a locked-down Docker sandbox." },
+      { t:"Exposio · TDK 2026", y:"2026", shelf:1, d:"Research paper and platform for scoring personal digital exposure from breach data with zero storage of user data. Defended at the Óbuda University TDK conference, November 2026." },
+      { t:"Mind the Gap · Purple teaming", y:"2026", shelf:1, d:"White paper measuring how much of ATT&CK an open-source stack (Sysmon + Wazuh + Sigma) really detects, using Atomic Red Team in a home lab." },
+      { t:"OSCP practice range", y:"2026", shelf:1, d:"Self-built exam-style range: a generator rolls random vulnerability modules per box plus an AD chain, walkthroughs stay sealed until after the attempt, 23h45m timer with scoring." },
+      { t:"AI-enabled YARA", y:"2026", d:"Clustering malware samples into families and generating YARA rules from the clusters." }
+    ]},
+    { group: "Projects", items: [
+      { t:"recontrack", y:"tool", shelf:1, d:"Scope-aware recon engagement tracker (Python CLI). Imports real nmap, httpx and subdomain output, enforces scope fail-closed so out-of-scope assets are withheld, tracks findings by severity. Standard library only, tested.", l:"https://github.com/SocoSec/recontrack", lt:"code" },
+      { t:"EU Cyber Capability Marketplace", y:"Oct 2025", shelf:1, d:"Hackathon prototype for a seven-country EU network to share cyber ranges and red-teaming expertise, with an AI matching engine. Built in 3 days at the European Cybersecurity Hackathon.", l:"https://github.com/SocoSec", lt:"write-up" },
+      { t:"Daily digest agent", y:"2026", shelf:1, d:"The Python agent on GitHub Actions behind this site's Posts: allowlisted sources only, deduplicated, every item linked to its original publisher.", l:"https://github.com/SocoSec/socosec.github.io", lt:"code" },
+      { t:"Multi-service Linux server", y:"Óbuda", d:"Complete Linux infrastructure: central user management, file sharing, full mail system (Postfix + Dovecot), HTTPS hosting, automated backups and client integration.", l:"https://github.com/SocoSec", lt:"code" },
+      { t:"Enterprise network & telephony design", y:"design", d:"Full network for a 4-level, 27-office facility: redundant dual-switch backbone, PoE access per floor, building-wide wireless, IP surveillance, and a PBX with a migration path to IP telephony." },
+      { t:"SOC Mentor", y:"2026", d:"Learning platform for SOC analysts: 18 branches, ~236 glossary terms and a Claude-powered tutor." }
+    ]},
+    { group: "Certifications", items: [
+      { t:"Google Cybersecurity Professional Certificate", y:"Coursera", d:"", l:"https://www.credly.com/badges/46bfff47-b3fa-444c-8eb8-c10159d0b27a/public_url", lt:"verify on Credly" },
+      { t:"Certified Cyber Security Analyst", y:"CyberWarFare Labs", d:"" },
+      { t:"CCNA", y:"Cisco", d:"" },
+      { t:"Cyber Threat Hunting", y:"Infosec", d:"" }
+    ]}
+  ],
+  papers: [
+    { t:"Analysis and Assessment of Personal Digital Exposure Risks: Design and Implementation of Exposio", y:"Nov 2026", l:"" },
+    { t:"Mind the Gap: Measuring Open-Source Detection Coverage with Purple Teaming", y:"draft", l:"" }
+  ],
+  online: [
+    ["GitHub", "SocoSec", "https://github.com/SocoSec"],
+    ["LinkedIn", "in/esmail-mohammad-a80a27199", "https://www.linkedin.com/in/esmail-mohammad-a80a27199"],
+    ["Email", "esmailkeabanni@gmail.com", "mailto:esmailkeabanni@gmail.com"]
+  ]
+};
+/* Daily digest posts: filled in by Jekyll on GitHub Pages (empty when opened as a plain file). */
+let DIGEST = [];
+try { DIGEST = JSON.parse(document.getElementById("digest-data").textContent); } catch (_) {}
+
+/* =================================================================
+   Below here: the scene. No need to touch it to update content.
+   ================================================================= */
+const SECTIONS = {
+  desk:    { x:800,  y:560, z:1 },
+  about:   { x:800,  y:560, z:1.9, cmd:"whoami" },
+  work:    { x:1240, y:650, z:2.6, cmd:"ls ~/work" },
+  posts:   { x:300,  y:650, z:2.6, cmd:"tail digest.log" },
+  online:  { x:1470, y:690, z:3.0, cmd:"ping esmail" }
+};
+const ORDER = ["about","work","posts","online"];
+const ALIAS = { digest:"posts", writing:"posts", certs:"work" };  // old site anchors
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ---- content renderers ---- */
+const itemHTML = it => `<div class="item"><div class="hd"><span class="t">${esc(it.t)}</span><span class="y">${esc(it.y)}</span></div>
+  ${it.d?`<div class="d">${esc(it.d)}</div>`:""}${it.l&&it.lt?`<a class="l" href="${esc(it.l)}">${esc(it.lt)} →</a>`:""}</div>`;
+const RENDER = {
+  about: () => `<h2>Hi, I'm ${esc(SITE.name)}.</h2><div class="kick">about</div>${SITE.about.map(p=>`<p>${esc(p)}</p>`).join("")}`,
+  work: () => `<h2>Work</h2><div class="kick">experience · research · projects · certs</div>${SITE.work.map(g=>`<h3>${esc(g.group)}</h3>${g.items.map(itemHTML).join("")}`).join("")}`,
+  posts: () => {
+    const row = w => `<div class="item"><div class="hd">${w.l?`<a class="t" href="${esc(w.l)}">${esc(w.t)}</a>`:`<span class="t">${esc(w.t)}</span>`}<span class="y">${esc(w.y)}</span></div></div>`;
+    return `<h2>Posts</h2><div class="kick">papers & a daily digest</div><h3>Papers</h3>${SITE.papers.map(row).join("")}
+      <h3>Daily AI & security digest</h3><p class="d" style="font-size:12.5px;color:#6b5a40">Filed every morning by a small agent on GitHub Actions. Allowlisted sources only, every item linked to the original report.</p>
+      ${DIGEST.length ? DIGEST.map(row).join("") : `<p class="d" style="font-size:12.5px">The digest list appears on the live site.</p>`}`;
+  },
+  online: () => `<h2>Online</h2><div class="kick">find me</div><div class="links">${SITE.online.map(([a,b,c])=>`<a href="${esc(c)}"><span>${esc(a)}</span><span>${esc(b)}</span></a>`).join("")}</div>`
+};
+
+/* ---- nav ---- */
+$("#nav").innerHTML = ORDER.map(k=>`<button data-go="${k}">${k.toUpperCase()}</button>`).join("");
+
+/* ---- scene decoration ---- */
+(function city(){
+  const svg = $("#city"); let h = "";
+  h += `<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#070a14"/><stop offset="1" stop-color="#1c1a2e"/></linearGradient></defs>`;
+  h += `<rect width="900" height="560" fill="url(#sky)"/>`;
+  let r = 7; const rnd = () => (r = (r*16807)%2147483647)/2147483647;
+  for (let layer=0; layer<2; layer++){
+    let x = -20;
+    while (x < 920){
+      const w = 40+rnd()*70, bh = (layer?140:220)+rnd()*(layer?140:160), y = 560-bh+(layer?40:0);
+      const col = layer ? "#0d0f19" : "#161829";
+      h += `<rect x="${x}" y="${y}" width="${w}" height="${bh}" fill="${col}"/>`;
+      for (let wy=y+10; wy<560; wy+=16) for (let wx=x+6; wx<x+w-8; wx+=12)
+        if (rnd() < (layer?.22:.12)) h += `<rect x="${wx}" y="${wy}" width="5" height="7" fill="${rnd()<.8?'#ffcf7a':'#9fd8ff'}" opacity="${.35+rnd()*.6}"/>`;
+      x += w + rnd()*10;
+    }
+  }
+  // neon sign
+  h += `<g style="animation:neon 6s infinite"><rect x="560" y="250" width="200" height="44" rx="4" fill="none" stroke="#4dffb8" stroke-width="2" opacity=".7"/>
+        <text x="660" y="280" text-anchor="middle" font-family="Archivo Black" font-size="22" fill="#4dffb8" style="filter:drop-shadow(0 0 6px #4dffb8)">OPEN PORTS</text></g>`;
+  h += `<text x="170" y="330" font-family="Archivo Black" font-size="16" fill="#ff6fae" opacity=".8" style="filter:drop-shadow(0 0 6px #ff6fae)">24H · NOODLES</text>`;
+  svg.innerHTML = h;
+  const st = document.createElement("style");
+  st.textContent = "@keyframes neon{0%,92%,100%{opacity:1}93%{opacity:.2}95%{opacity:1}96%{opacity:.4}}";
+  document.head.appendChild(st);
+})();
+
+(function plant(){
+  const p = $("#plant"); const leaves = [[60,20,-35],[70,10,5],[50,30,-70],[75,35,35],[40,40,-100],[85,45,60]];
+  leaves.forEach(([l,t,rot])=>{ const s=document.createElement("span"); s.style.cssText=`left:${l}px;top:${t}px;transform:rotate(${rot}deg)`; p.appendChild(s); });
+})();
+
+(function stack(){
+  const cols = ["#ffd447","#ff8a5c","#7ad1ff","#9cf0a8","#ff9bd2","#d0c3ff","#ffe7a3"];
+  const all = SITE.work.flatMap(g=>g.items).filter(i=>i.shelf).slice(0,7);
+  $("#stack").innerHTML = all.map((it,i)=>`<div class="disk" style="bottom:${i*24}px;left:${(i%3)*8-6}px;width:${260+(i%2)*20}px;background:${cols[i%cols.length]}">${esc(it.t)}<em>${esc(it.y)}</em></div>`).join("");
+})();
+
+(function books(){
+  const cols = ["#8c2f22","#2f4a7a","#3f6a3a","#6b4a2a"];
+  $("#books").innerHTML = ["EXPOSIO","MIND THE GAP","DAILY DIGEST","ATT&amp;CK"].map((t,i)=>`<b style="bottom:${i*22}px;left:${(i%2)*6}px;background:${cols[i]}">${t}</b>`).join("");
+})();
+
+/* rain */
+(function rain(){
+  const c = $("#rain"), x = c.getContext("2d"); c.width = 900; c.height = 560;
+  const drops = Array.from({length:140},()=>({x:Math.random()*900,y:Math.random()*560,v:6+Math.random()*8,l:8+Math.random()*14}));
+  const beads = Array.from({length:40},()=>({x:Math.random()*900,y:Math.random()*560,r:1+Math.random()*2.2}));
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  (function f(){
+    x.clearRect(0,0,900,560); x.strokeStyle="rgba(180,200,255,.22)"; x.lineWidth=1; x.beginPath();
+    for (const d of drops){ x.moveTo(d.x,d.y); x.lineTo(d.x-1.5,d.y+d.l); if(!reduce){d.y+=d.v; d.x-=.3; if(d.y>560){d.y=-20;d.x=Math.random()*900;}} }
+    x.stroke(); x.fillStyle="rgba(220,230,255,.35)";
+    for (const b of beads){ x.beginPath(); x.arc(b.x,b.y,b.r,0,7); x.fill(); if(!reduce){ b.y+=.15*b.r; if(b.y>560){b.y=0;b.x=Math.random()*900;} } }
+    if(!document.body.classList.contains("lofi")) requestAnimationFrame(f); else setTimeout(()=>requestAnimationFrame(f),500);
+  })();
+})();
+
+/* clock */
+setInterval(()=>{ const d=new Date(); $("#clock").textContent = d.toTimeString().slice(0,5); }, 1000);
+
+/* ---- terminal typing ---- */
+let typeTimer;
+function typeTerm(lines){
+  clearTimeout(typeTimer); const el=$("#term"); el.textContent=""; let li=0, ci=0;
+  (function step(){
+    if (li>=lines.length) return;
+    const line = lines[li];
+    if (ci<line.length){ el.textContent += line[ci++]; typeTimer=setTimeout(step, line.startsWith(">")?55:12); }
+    else { el.textContent += "\n"; li++; ci=0; typeTimer=setTimeout(step, 260); }
+  })();
+}
+const IDLE = ["> boot nightwatch", "[ ok ] lab online", "[ ok ] coffee: warm", "", "> whoami", SITE.name.toLowerCase()+" abdullah", "", "click around the desk_"];
+function termFor(k){
+  if (k==="about") return ["> whoami", "esmail abdullah", "socotra → budapest", "msc cybersecurity eng.", "soc · offsec · agents", ""];
+  if (k==="work") return ["> ls ~/work", ...SITE.work.flatMap(g=>g.items).filter(i=>i.shelf).slice(0,6).map(w=>"  "+w.t.split(" ·")[0].toLowerCase().replace(/\s+/g,"-")+"/"), ""];
+  if (k==="posts") { const p=(DIGEST.length?DIGEST:SITE.papers).slice(0,5); return ["> tail digest.log", ...p.map(w=>"  "+String(w.y).slice(0,6)+" "+w.t.slice(0,18)+"…"), ""]; }
+  if (k==="online") return ["> ping esmail", "64 bytes: reply", "64 bytes: reply", "0% packet loss", ""];
+  return IDLE;
+}
+
+/* ---- camera ---- */
+let current = "desk";
+function place(){
+  const vw=innerWidth, vh=innerHeight, s=SECTIONS[current];
+  const base = Math.max(vw/1600, vh/1000);
+  const panelW = current==="desk" || vw<700 ? 0 : $("#panel").offsetWidth;
+  const cx = (vw-panelW)/2, cy = vh/2;
+  let z = base*s.z;
+  // keep the stage covering the screen
+  let tx = cx - s.x*z, ty = cy - s.y*z;
+  tx = Math.min(0, Math.max(vw-1600*z, tx)); ty = Math.min(0, Math.max(vh-1000*z, ty));
+  $("#stage").style.transform = `translate(${tx}px,${ty}px) scale(${z})`;
+}
+function go(k, push=true){
+  k = ALIAS[k] || k;
+  if (!SECTIONS[k]) k="desk";
+  current = k;
+  document.body.classList.toggle("focused", k!=="desk");
+  document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on", b.dataset.go===k));
+  if (k!=="desk"){ $("#sheet").innerHTML = RENDER[k](); $("#panel").scrollTop = 0; }
+  typeTerm(termFor(k));
+  place();
+  if (push) history.replaceState(null,"", k==="desk" ? location.pathname : "#"+k);
+}
+document.addEventListener("click", e=>{
+  const t = e.target.closest("[data-go]"); if (!t) return;
+  if (document.body.classList.contains("lofi")){ const sec=document.getElementById("lofi-"+t.dataset.go); if(sec) sec.scrollIntoView({behavior:"smooth"}); return; }
+  if (t.classList.contains("hot") && current!=="desk") return;
+  go(t.dataset.go);
+});
+$("#back").onclick = ()=>go("desk");
+$("#logo").onclick = e=>{ e.preventDefault(); go("desk"); };
+addEventListener("keydown", e=>{ if(e.key==="Escape") go("desk"); });
+addEventListener("resize", place);
+
+/* ---- lo-fi (static) version ---- */
+function buildLofi(){
+  $("#lofiWrap").innerHTML = `<div class="hello">Hi, I'm ${esc(SITE.name)}.</div><p class="intro">${esc(SITE.intro)}</p>
+  <div class="note" id="lofiNote"></div>
+  ${ORDER.map(k=>`<div class="sheet" id="lofi-${k}">${RENDER[k]()}</div>`).join("")}`;
+}
+function setLofi(on){
+  document.body.classList.toggle("lofi", on);
+  $("#lofiBtn").classList.toggle("lit", on);
+  $("#lofiBtn").textContent = on ? "▶ INTERACTIVE" : "▤ LO-FI";
+  $("#lofiNote").innerHTML = innerWidth<700
+    ? `You're seeing the static version because the interactive desk works best on a bigger screen. <button id="tryInt">Try the interactive one anyway.</button>`
+    : `Static version. <button id="tryInt">Back to the desk.</button>`;
+  $("#tryInt").onclick = ()=>setLofi(false);
+  try{ localStorage.setItem("lofi", on?"1":"0"); }catch(_){}
+  if (!on) place();
+}
+$("#lofiBtn").onclick = ()=>setLofi(!document.body.classList.contains("lofi"));
+
+/* ---- ambient sound: rain + room hum, generated (no files) ---- */
+let audio;
+$("#sound").onclick = ()=>{
+  const btn=$("#sound");
+  if (!audio){
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const len = ctx.sampleRate*2, buf = ctx.createBuffer(1,len,ctx.sampleRate), d = buf.getChannelData(0);
+    let last=0; for (let i=0;i<len;i++){ const w=Math.random()*2-1; last=(last+.02*w)/1.02; d[i]=last*3.5 + w*.04; }
+    const src=ctx.createBufferSource(); src.buffer=buf; src.loop=true;
+    const lp=ctx.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=1400;
+    const g=ctx.createGain(); g.gain.value=.0;
+    src.connect(lp).connect(g).connect(ctx.destination); src.start();
+    audio={ctx,g,on:false};
+  }
+  audio.on=!audio.on; audio.ctx.resume();
+  audio.g.gain.setTargetAtTime(audio.on?.35:0, audio.ctx.currentTime, .4);
+  btn.textContent = audio.on ? "♪ SOUND ON" : "♪ SOUND OFF";
+  btn.classList.toggle("lit", audio.on);
+};
+
+/* ---- start ---- */
+buildLofi();
+let pref=null; try{ pref=localStorage.getItem("lofi"); }catch(_){}
+const startLofi = pref ? pref==="1" : innerWidth<700;
+setLofi(startLofi);
+go((location.hash||"").slice(1) || "desk", false);
+</script>
+</body>
+</html>
