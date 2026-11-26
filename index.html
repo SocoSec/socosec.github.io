@@ -7,7 +7,7 @@ layout: null
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Esmail Abdullah</title>
-<meta name="description" content="Esmail Abdullah: cybersecurity engineer, red/purple teaming, autonomous security agents.">
+<meta name="description" content="Esmail Abdullah: security analyst and MSc Cybersecurity Engineering student at Óbuda University. SOC, offensive security and autonomous security agents.">
 <link rel="icon" type="image/svg+xml" href="{{ '/assets/favicon.svg' | relative_url }}">
 <link rel="icon" type="image/png" sizes="192x192" href="{{ '/assets/favicon-192.png' | relative_url }}">
 <link rel="apple-touch-icon" href="{{ '/assets/apple-touch-icon.png' | relative_url }}">
@@ -345,41 +345,63 @@ body.lofi #back{display:none}
 const SITE = {
   name: "Esmail",
   handle: "socosec",
-  intro: "Cybersecurity engineer from Socotra, Yemen, now in Budapest doing an MSc at Óbuda University. I work across security operations and offensive security, and I build agents that do both.",
+  intro: "Security analyst from Socotra, Yemen, now in Budapest doing an MSc in Cybersecurity Engineering (SOC Analyst track) at Óbuda University. I work across security operations and offensive security, and I build tools and agents that do both.",
   about: [
-    "I'm a cybersecurity engineer from Socotra, Yemen, currently in Budapest on a Stipendium Hungaricum scholarship for my MSc in Cybersecurity Engineering at Óbuda University (4.83/5.0 first semester).",
-    "Before that: a dual B.Sc. in Software Engineering (AASTMT & University of Northampton, First Class Honours), two years as a Network and Information Security Specialist at Al Muthalath Al Sharqi Holding, and penetration testing training at Security Meter Academy in Cairo.",
-    "On the defensive side I work with SIEM tools, IDS, packet analysis and MITRE ATT&CK; on the offensive side, network and web-app penetration testing. Python, Java, Go and C++ underneath.",
+    "I'm a security analyst from Socotra, Yemen, currently in Budapest on a Stipendium Hungaricum scholarship for my MSc in Cybersecurity Engineering at Óbuda University, specialising as a SOC analyst (4.83/5.0 first semester). In October 2026 the university gave me its Student Excellence Award.",
+    "Before that: a dual B.Sc. in Software Engineering (AASTMT & University of Northampton, First Class Honours) on a Khalifa Foundation scholarship, 1 year 8 months as a Network and Information Security Specialist at Al Muthalath Al Sharqi Holding, and network penetration testing training at Security Meter Academy in Cairo.",
+    "On the defensive side I work with SIEM tools, IDS, packet analysis and MITRE ATT&CK; on the offensive side, network and web-app penetration testing and red-teaming ML models. Python, JavaScript, Java, Go and C++ underneath.",
     "Right now I'm building Cyber-AGI, an autonomous security agent that runs scoped engagements, reflects on its mistakes and wastes fewer steps over time, alongside my own purple-team lab and an OSCP-style practice range.",
     "This site also keeps watch while I sleep: a small agent reads trusted sources every morning and files the AI & security digest you'll find under Posts."
   ],
   work: [
-    { group: "Experience & education", items: [
-      { t:"MSc Cybersecurity Engineering · Óbuda University", y:"now", d:"Budapest, on a Stipendium Hungaricum scholarship. Planned visiting thesis stay in a Swiss security lab from February 2027." },
-      { t:"Network & Information Security Specialist · Al Muthalath Al Sharqi Holding", y:"2 years", d:"Network and information security for the group." },
-      { t:"Penetration testing training · Security Meter Academy", y:"Cairo", d:"" },
-      { t:"B.Sc. Software Engineering · AASTMT & University of Northampton", y:"First Class", d:"Dual degree." }
+    { group: "Experience", items: [
+      { t:"Network & Information Security Specialist · Al Muthalath Al Sharqi Holding", y:"2024–2025", d:"Socotra, Yemen (Feb 2024 – Sep 2025). Engineered the full network and telephony design for a 4-level, 27-office facility: redundant backbone on dual 16-port distribution switches, floor-specific PoE access, building-wide wireless, multi-floor IP surveillance, and a PBX design with a migration path to IP telephony. Also mapped and documented 25+ government services (building permits, business licences) into service cards and as-is workflows for the engineering teams." },
+      { t:"Teaching Assistant & IT Support · Socotra Archipelago University", y:"2023", d:"Sep – Dec 2023. Teaching assistant for C++ and IT support on campus." },
+      { t:"Network Penetration Testing Trainee · Security Meter Academy", y:"2023", d:"Cairo, Egypt (Jan – May 2023). Recon, port and vulnerability scanning, web-app and password attacks, privilege escalation, Active Directory and buffer overflows, plus writing findings up for clients." },
+      { t:"Internship Trainee · Central Agency for Public Mobilization and Statistics", y:"2022", d:"Alexandria, Egypt (Jul – Aug 2022)." }
+    ]},
+    { group: "Education", items: [
+      { t:"MSc Cybersecurity Engineering · Óbuda University", y:"2025–2027", d:"Budapest. Specialisation: SOC Analyst. Stipendium Hungaricum scholarship. Planned visiting thesis stay in a Swiss security lab from February 2027." },
+      { t:"B.Sc. Computer Software Engineering · University of Northampton", y:"2020–2024", d:"First Class (1st). Dual degree programme with AASTMT." },
+      { t:"B.Sc. Computer Software Engineering · Arab Academy for Science, Technology & Maritime Transport", y:"2019–2023", d:"Alexandria, on a Khalifa Bin Zayed Al Nahyan Foundation scholarship." }
     ]},
     { group: "Research & labs", items: [
       { t:"Cyber-AGI", y:"2026–now", shelf:1, d:"Autonomous security agent: blue-team triage, a red-team operator over a kill-chain state machine with a critic that verifies every claimed shell, and a memory loop that turns past engagements into lessons. Wired to CTF benchmarks in a locked-down Docker sandbox." },
+      { t:"Toxic Content Detection · adversarial red-teaming", y:"2026–now", shelf:1, d:"Fine-tuned a RoBERTa transformer to classify text as clean, offensive, hate speech or cyberbullying, then red-teamed it: character-substitution attacks (leetspeak, homoglyphs) evade detection up to 78% of the time. Full pipeline from data cleaning to training, evaluation, adversarial testing and a Flask REST API. Python, PyTorch, Hugging Face Transformers.", l:"https://github.com/SocoSec/ToxicContentDetection", lt:"code" },
       { t:"Exposio · TDK 2026", y:"2026", shelf:1, d:"Research paper and platform for scoring personal digital exposure from breach data with zero storage of user data. Defended at the Óbuda University TDK conference, November 2026." },
-      { t:"Mind the Gap · Purple teaming", y:"2026", shelf:1, d:"White paper measuring how much of ATT&CK an open-source stack (Sysmon + Wazuh + Sigma) really detects, using Atomic Red Team in a home lab." },
+      { t:"Mind the Gap · Purple teaming", y:"2026", d:"White paper measuring how much of ATT&CK an open-source stack (Sysmon + Wazuh + Sigma) really detects, using Atomic Red Team in a home lab." },
       { t:"OSCP practice range", y:"2026", shelf:1, d:"Self-built exam-style range: a generator rolls random vulnerability modules per box plus an AD chain, walkthroughs stay sealed until after the attempt, 23h45m timer with scoring." },
       { t:"AI-enabled YARA", y:"2026", d:"Clustering malware samples into families and generating YARA rules from the clusters." }
     ]},
     { group: "Projects", items: [
+      { t:"PhishCheck · email threat analyzer", y:"tool", shelf:1, d:"Browser tool that explains the phishing red flags in a suspicious email: checks SPF/DKIM/DMARC, brand and domain impersonation, deceptive links and pressure language, scores the risk and extracts defanged IOCs. Dependency-free JavaScript with a 17-test suite." },
+      { t:"OvershareWatch · privacy coach", y:"extension", shelf:1, d:"Chrome extension that warns you before you overshare on social media: flags birthdays, addresses, travel plans, phone numbers and ID numbers as you type, and explains the attack each one enables (phishing, SIM swap, burglary, identity theft). 100% local, teaches rather than blocks. Manifest V3." },
+      { t:"LinkSafe Checker", y:"tool", d:"Client-side first line of defence against malicious links: analyses URL structure in real time to flag typosquatting (Levenshtein distance), brand spoofing, homograph attacks and open redirects, with no external APIs. Vanilla JavaScript." },
+      { t:"VulnDex · pentest reference & AI assistant", y:"tool", d:"Interactive reference platform for ethical hackers covering web, mobile, network and AI vulnerabilities, with a Gemini-powered defensive security advisor and a terminal-themed UI." },
       { t:"recontrack", y:"tool", shelf:1, d:"Scope-aware recon engagement tracker (Python CLI). Imports real nmap, httpx and subdomain output, enforces scope fail-closed so out-of-scope assets are withheld, tracks findings by severity. Standard library only, tested.", l:"https://github.com/SocoSec/recontrack", lt:"code" },
-      { t:"EU Cyber Capability Marketplace", y:"Oct 2025", shelf:1, d:"Hackathon prototype for a seven-country EU network to share cyber ranges and red-teaming expertise, with an AI matching engine. Built in 3 days at the European Cybersecurity Hackathon.", l:"https://github.com/SocoSec", lt:"write-up" },
-      { t:"Daily digest agent", y:"2026", shelf:1, d:"The Python agent on GitHub Actions behind this site's Posts: allowlisted sources only, deduplicated, every item linked to its original publisher.", l:"https://github.com/SocoSec/socosec.github.io", lt:"code" },
+      { t:"EU Cyber Capability Marketplace", y:"Oct 2025", d:"Hackathon prototype for a seven-country EU network to share cyber ranges and red-teaming expertise, with an AI matching engine. Built in 3 days at the European Cybersecurity Hackathon 2025 (Cyber Islands).", l:"https://github.com/SocoSec", lt:"write-up" },
+      { t:"Daily digest agent", y:"2026", d:"The Python agent on GitHub Actions behind this site's Posts: allowlisted sources only, deduplicated, every item linked to its original publisher.", l:"https://github.com/SocoSec/socosec.github.io", lt:"code" },
+      { t:"Public service process re-engineering", y:"2024–2025", d:"Mapped 25+ manual government services across 9 agencies into structured workflows and service cards (steps, documents, timelines) as the foundation for a digital transformation programme." },
       { t:"Multi-service Linux server", y:"Óbuda", d:"Complete Linux infrastructure: central user management, file sharing, full mail system (Postfix + Dovecot), HTTPS hosting, automated backups and client integration.", l:"https://github.com/SocoSec", lt:"code" },
-      { t:"Enterprise network & telephony design", y:"design", d:"Full network for a 4-level, 27-office facility: redundant dual-switch backbone, PoE access per floor, building-wide wireless, IP surveillance, and a PBX with a migration path to IP telephony." },
       { t:"SOC Mentor", y:"2026", d:"Learning platform for SOC analysts: 18 branches, ~236 glossary terms and a Claude-powered tutor." }
     ]},
+    { group: "Honors & awards", items: [
+      { t:"Student Excellence Award · Óbuda University", y:"Oct 2026", d:"For outstanding academic performance, sports, cultural activities and contributions to the university community, with a one-time HUF 100,000 merit scholarship." },
+      { t:"Academic Excellence Scholarship · Ministry of Higher Education, Yemen", y:"Sep 2025", d:"Financial support for graduate study in Hungary." },
+      { t:"Stipendium Hungaricum Scholarship · Tempus Public Foundation", y:"Sep 2025", d:"Full scholarship for the MSc at Óbuda University." },
+      { t:"Khalifa Foundation Scholarship · Khalifa Bin Zayed Al Nahyan Foundation", y:"Sep 2019", d:"For the B.Sc. at AASTMT." }
+    ]},
     { group: "Certifications", items: [
-      { t:"Google Cybersecurity Professional Certificate", y:"Coursera", d:"", l:"https://www.credly.com/badges/46bfff47-b3fa-444c-8eb8-c10159d0b27a/public_url", lt:"verify on Credly" },
-      { t:"Certified Cyber Security Analyst", y:"CyberWarFare Labs", d:"" },
-      { t:"CCNA", y:"Cisco", d:"" },
-      { t:"Cyber Threat Hunting", y:"Infosec", d:"" }
+      { t:"Certified Cyber Security Analyst", y:"CyberWarFare Labs · 2024", d:"" },
+      { t:"European Cybersecurity Hackathon 2025", y:"Cyber Islands · 2025", d:"" },
+      { t:"CrowdStrike: For SOC Analysts", y:"CrowdStrike · 2024", d:"" },
+      { t:"Introduction to OSINT", y:"My OSINT Training · 2024", d:"" },
+      { t:"Computer Hardware Basics", y:"Cisco · 2024", d:"" },
+      { t:"Google Cybersecurity Professional Certificate", y:"Google · 2023", d:"Incident response and SIEM.", l:"https://www.credly.com/badges/46bfff47-b3fa-444c-8eb8-c10159d0b27a/public_url", lt:"verify on Credly" },
+      { t:"Foundations of Operationalizing MITRE ATT&CK", y:"AttackIQ · 2023", d:"" },
+      { t:"SOC Member", y:"LetsDefend · 2023", d:"" },
+      { t:"Cyber Threat Hunting", y:"Infosec Institute · 2023", d:"" },
+      { t:"NSE 2", y:"Fortinet · 2023", d:"" }
     ]}
   ],
   papers: [
@@ -499,7 +521,7 @@ function typeTerm(lines){
 }
 const IDLE = ["> boot nightwatch", "[ ok ] lab online", "[ ok ] coffee: warm", "", "> whoami", SITE.name.toLowerCase()+" abdullah", "", "click around the desk_"];
 function termFor(k){
-  if (k==="about") return ["> whoami", "esmail abdullah", "socotra → budapest", "msc cybersecurity eng.", "soc · offsec · agents", ""];
+  if (k==="about") return ["> whoami", "esmail abdullah", "security analyst", "socotra → budapest", "msc cyber eng. · soc", "offsec · agents", ""];
   if (k==="work") return ["> ls ~/work", ...SITE.work.flatMap(g=>g.items).filter(i=>i.shelf).slice(0,6).map(w=>"  "+w.t.split(" ·")[0].toLowerCase().replace(/\s+/g,"-")+"/"), ""];
   if (k==="posts") { const p=(DIGEST.length?DIGEST:SITE.papers).slice(0,5); return ["> tail digest.log", ...p.map(w=>"  "+String(w.y).slice(0,6)+" "+w.t.slice(0,18)+"…"), ""]; }
   if (k==="online") return ["> ping esmail", "64 bytes: reply", "64 bytes: reply", "0% packet loss", ""];
