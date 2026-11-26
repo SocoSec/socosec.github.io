@@ -275,7 +275,7 @@ const SITE = {
 SITE.photos = SITE.photos || { me:"photos/me.jpg", tree:"photos/dragon-tree.jpg", mountains:"photos/socotra-highlands.jpg" };
 // The welcome line. To use a recorded voice instead, put an mp3 in the repo and set SITE.voice = "audio/welcome.mp3".
 SITE.greeting = SITE.greeting || "Ah, good evening, and welcome. This website belongs to Esmail Abdullah, a security analyst from the island of Socotra, now studying in Budapest. Do make yourself comfortable. Pour yourself a coffee, and have a good look around.";
-SITE.voice = SITE.voice || "";
+SITE.voice = SITE.voice || "audio/welcome.mp3";   // recorded welcome (neural British voice); set "" to use the browser voice
 
 let DIGEST = [];
 try { DIGEST = JSON.parse(document.getElementById("digest-data").textContent); } catch (_) {}
@@ -370,7 +370,17 @@ function pickVoice(){
 }
 function greet(){
   if (A.greeted) return; A.greeted = true; $("#enter").classList.add("gone");
-  if (SITE.voice){ const a = new Audio(SITE.voice); a.volume = .95; a.play().catch(()=>{}); return; }
+  if (SITE.voice){
+    const a = new Audio(SITE.voice); a.crossOrigin = "anonymous";
+    try {                                   // a little room echo so the voice sounds like it's in the room
+      const ctx = A.ctx, src = ctx.createMediaElementSource(a), warm = ctx.createBiquadFilter(); warm.type = "lowpass"; warm.frequency.value = 7500;
+      const len = ctx.sampleRate*1.3, ir = ctx.createBuffer(2, len, ctx.sampleRate);
+      for (let ch=0; ch<2; ch++){ const d = ir.getChannelData(ch); for (let i=0;i<len;i++) d[i] = (Math.random()*2-1) * Math.pow(1-i/len, 3.2); }
+      const verb = ctx.createConvolver(); verb.buffer = ir; const wet = ctx.createGain(); wet.gain.value = .16; const dry = ctx.createGain(); dry.gain.value = .95;
+      src.connect(warm); warm.connect(dry).connect(A.master); warm.connect(verb).connect(wet).connect(A.master);
+    } catch(_) {}
+    a.play().catch(()=>{}); A.voiceEl = a; return;
+  }
   if (!("speechSynthesis" in window)) return;
   const say = () => {
     const u = new SpeechSynthesisUtterance(SITE.greeting); const v = pickVoice();
@@ -385,7 +395,7 @@ function greet(){
 function setSound(on){
   audioInit(); A.ctx.resume();
   A.on = on; A.amb.gain.setTargetAtTime(on ? .3 : 0, A.ctx.currentTime, .5);
-  if (on) greet(); else if ("speechSynthesis" in window) speechSynthesis.cancel();
+  if (on) greet(); else { if ("speechSynthesis" in window) speechSynthesis.cancel(); if (A.voiceEl) A.voiceEl.pause(); }
   $("#sound").textContent = on ? "♪ SOUND ON" : "♪ SOUND OFF"; $("#sound").classList.toggle("lit", on);
 }
 $("#sound").onclick = () => { A.userChose = true; $("#enter").classList.add("gone"); setSound(!A.on); };
