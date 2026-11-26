@@ -13,7 +13,7 @@ layout: null
 <link rel="apple-touch-icon" href="{{ '/assets/apple-touch-icon.png' | relative_url }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=JetBrains+Mono:wght@400;600&family=VT323&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=JetBrains+Mono:wght@400;600&family=Newsreader:opsz,wght@6..72,400;6..72,600&family=VT323&display=swap" rel="stylesheet">
 <style>
 /* ================================================================
    EDIT YOUR CONTENT IN THE <script> "SITE" OBJECT AT THE BOTTOM.
@@ -246,21 +246,76 @@ body.focused .disk:hover,body.focused .books b:hover{transform:none;filter:none}
 .glitch{animation:glitch .3s steps(3)}
 @keyframes glitch{0%{opacity:.15;transform:translateX(-8px)}50%{opacity:.8;transform:translateX(5px) skewX(-5deg)}100%{opacity:1;transform:none}}
 
-/* ---------- lo-fi / static version ---------- */
-#lofi{position:fixed;inset:0;overflow:auto;background:#14100d;z-index:30;display:none;padding:80px 16px 60px}
+/* ---------- lo-fi / static version: a quiet reading page ---------- */
+body{--lf-bg:#f3efe6;--lf-ink:#1d1a16;--lf-dim:#6b6358;--lf-rule:#d9d1c2;--lf-accent:#8c2f22;--lf-chip:#e9e3d6}
+body.lofi.dark{--lf-bg:#15120f;--lf-ink:#ece5d8;--lf-dim:#a39a8b;--lf-rule:#2f2923;--lf-accent:#ffb347;--lf-chip:#221d18}
+body.lofi{background:var(--lf-bg)}
+#lofi{position:fixed;inset:0;overflow:auto;background:var(--lf-bg);color:var(--lf-ink);z-index:30;display:none;padding:110px 16px 80px;
+  transition:background .3s,color .3s}
 body.lofi #lofi{display:block}
-body.lofi #viewport,body.lofi .vignette,body.lofi .grain,body.lofi #panel{display:none}
-body.lofi .top{z-index:40;background:rgba(20,16,13,.94);backdrop-filter:blur(8px);border-bottom:1px solid #2e241c}
-body.lofi .top .logo,body.lofi nav button{text-shadow:none}
-body.lofi .bottom{z-index:40}
-body.lofi #back{display:none}
-#lofi .sheet{scroll-margin-top:84px}
-#lofi .wrap{max-width:720px;margin:0 auto}
-#lofi .hello{font-family:"Archivo Black";font-size:clamp(34px,7vw,56px);line-height:1.05;margin-bottom:14px}
-#lofi .intro{color:var(--dim);font-size:15px;line-height:1.7;margin-bottom:24px}
-#lofi .note{font-size:12.5px;line-height:1.6;color:var(--dim);border:1px dashed #4a3a2c;border-radius:6px;padding:12px 14px;margin-bottom:30px}
-#lofi .note button{text-decoration:underline;color:var(--accent)}
-#lofi .sheet{margin-bottom:22px}
+body.lofi #viewport,body.lofi .vignette,body.lofi .grain,body.lofi #panel,body.lofi #tv,body.lofi .bottom{display:none}
+body.lofi .top{z-index:40;background:color-mix(in srgb,var(--lf-bg) 92%,transparent);backdrop-filter:blur(8px);color:var(--lf-ink);
+  padding-left:max(16px,calc((100vw - 1240px)/2));padding-right:max(16px,calc((100vw - 1240px)/2))}
+body.lofi .top .logo{text-shadow:none;color:var(--lf-ink)}
+body.lofi nav button{text-shadow:none;color:var(--lf-ink);font-size:17px;letter-spacing:.1em;padding:4px 10px}
+body.lofi nav button:hover{background:var(--lf-chip)}
+body.lofi nav button.on{background:none;color:var(--lf-accent);text-decoration:underline;text-underline-offset:6px}
+.hdr-tools{display:none;gap:6px;margin-left:22px;pointer-events:auto}
+body.lofi .hdr-tools{display:flex}
+.hdr-tools button{font:600 13px var(--mono);letter-spacing:.14em;color:var(--lf-ink);border:1px solid var(--lf-rule);border-radius:4px;padding:6px 10px;
+  background:var(--lf-bg)}
+.hdr-tools button:hover{border-color:var(--lf-ink)}
+body.lofi .top{justify-content:flex-start}
+body.lofi .top .logo{margin-right:auto}
+
+#lofi .wrap{max-width:780px;margin:0 auto}
+#lofi .serif{font-family:"Newsreader",Georgia,serif}
+#lofi .hello{font-family:"Newsreader",Georgia,serif;font-weight:600;font-size:clamp(42px,7vw,72px);line-height:1.02;letter-spacing:-.01em;margin-bottom:18px}
+#lofi .intro{font-family:"Newsreader",Georgia,serif;font-size:clamp(20px,2.4vw,27px);line-height:1.4;color:var(--lf-ink);opacity:.86;margin-bottom:22px;max-width:700px}
+#lofi .more{font:14px var(--mono);color:var(--lf-ink);text-decoration:underline;text-underline-offset:5px;text-decoration-color:var(--lf-rule)}
+#lofi .more:hover{text-decoration-color:var(--lf-ink)}
+#lofi hr{border:0;border-top:1px solid var(--lf-rule);margin:44px 0}
+
+/* desk snapshot */
+#lofi .snap{position:relative;display:block;width:100%;aspect-ratio:1600/860;overflow:hidden;border-radius:4px;background:#0d0907;cursor:pointer;
+  box-shadow:0 24px 50px -20px rgba(0,0,0,.45)}
+#lofi .snap-inner{position:absolute;left:0;top:0;width:1600px;height:1000px;transform-origin:0 0;pointer-events:none}
+#lofi .snap-inner *{animation-play-state:paused !important;transition:none !important}
+#lofi .snap::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 55%,transparent 50%,rgba(0,0,0,.5))}
+#lofi .snap .cta{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:2;font:600 12px var(--mono);letter-spacing:.16em;
+  color:#f3e9d8;background:rgba(10,8,6,.78);border:1px solid rgba(255,255,255,.18);padding:9px 14px;border-radius:999px;white-space:nowrap;transition:border-color .2s}
+#lofi .snap:hover .cta{border-color:#ffb347;color:#ffb347}
+#lofi .note{font:12.5px/1.6 var(--mono);color:var(--lf-dim);margin-top:12px}
+#lofi .note button{text-decoration:underline;color:var(--lf-ink);text-underline-offset:4px}
+
+/* sections */
+#lofi .lsec{scroll-margin-top:96px;margin-top:64px}
+#lofi .lsec h2{font-family:"Newsreader",Georgia,serif;font-weight:600;font-size:clamp(30px,4vw,40px);letter-spacing:-.01em;margin-bottom:2px}
+#lofi .kick{font:12px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--lf-dim);margin-bottom:18px}
+#lofi .lsec h3{font:600 12px var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--lf-accent);margin:34px 0 4px}
+#lofi .lsec p{font-family:"Newsreader",Georgia,serif;font-size:19px;line-height:1.6;margin-bottom:14px}
+#lofi .item{padding:14px 0;border-bottom:1px solid var(--lf-rule)}
+#lofi .item:last-child{border-bottom:0}
+#lofi .item .hd{display:flex;justify-content:space-between;gap:16px;align-items:baseline}
+#lofi .item .t{font-family:"Newsreader",Georgia,serif;font-weight:600;font-size:19px;line-height:1.3;color:var(--lf-ink);text-decoration:none}
+#lofi a.t:hover{text-decoration:underline;text-underline-offset:4px}
+#lofi .item .y{font:12.5px var(--mono);color:var(--lf-dim);white-space:nowrap}
+#lofi .item .d{font-family:"Newsreader",Georgia,serif;font-size:17px;line-height:1.55;color:var(--lf-dim);margin-top:4px}
+#lofi .item .l{font:12.5px var(--mono);color:var(--lf-accent);margin-top:6px;display:inline-block}
+#lofi .links a{display:flex;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid var(--lf-rule);text-decoration:none;
+  font-family:"Newsreader",Georgia,serif;font-size:19px}
+#lofi .links a span:last-child{font:13px var(--mono);color:var(--lf-dim)}
+#lofi .links a:hover span:first-child{text-decoration:underline;text-underline-offset:4px}
+#lofi .foot{margin-top:80px;padding-top:22px;border-top:1px solid var(--lf-rule);font:12px var(--mono);color:var(--lf-dim);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+@media (max-width:700px){
+  #lofi{padding-top:96px}
+  body.lofi nav button{font-size:12px;padding:4px 5px;letter-spacing:.04em}
+  .hdr-tools{margin-left:6px}
+  .hdr-tools button{padding:5px 7px;font-size:11px}
+  #lofi .item .hd{flex-direction:column;gap:2px}
+  #lofi .snap .cta{font-size:10px;padding:7px 10px}
+}
+@media (max-width:440px){ body.lofi .top{flex-wrap:wrap;row-gap:8px} body.lofi .top .logo{width:100%} .hdr-tools{margin-left:auto} }
 
 @media (max-width:700px){
   .top{padding:14px 16px}
@@ -277,6 +332,7 @@ body.lofi #back{display:none}
 <header class="top">
   <a class="logo" href="#" id="logo">ESMAIL ABDULLAH</a>
   <nav id="nav"></nav>
+  <div class="hdr-tools"><button id="hifiBtn" title="Interactive desk">HI-FI</button><button id="themeBtn" title="Light / dark" aria-label="Toggle dark mode" aria-pressed="false">◐</button></div>
 </header>
 
 <div id="viewport">
@@ -436,8 +492,8 @@ const RENDER = {
   posts: () => {
     const row = w => `<div class="item"><div class="hd">${w.l?`<a class="t" href="${esc(w.l)}">${esc(w.t)}</a>`:`<span class="t">${esc(w.t)}</span>`}<span class="y">${esc(w.y)}</span></div></div>`;
     return `<h2>Posts</h2><div class="kick">papers & a daily digest</div><h3>Papers</h3>${SITE.papers.map(row).join("")}
-      <h3>Daily AI & security digest</h3><p class="d" style="font-size:12.5px;color:#6b5a40">Filed every morning by a small agent on GitHub Actions. Allowlisted sources only, every item linked to the original report.</p>
-      ${DIGEST.length ? DIGEST.map(row).join("") : `<p class="d" style="font-size:12.5px">The digest list appears on the live site.</p>`}`;
+      <h3>Daily AI & security digest</h3><p class="d">Filed every morning by a small agent on GitHub Actions. Allowlisted sources only, every item linked to the original report.</p>
+      ${DIGEST.length ? DIGEST.map(row).join("") : `<p class="d">The digest list appears on the live site.</p>`}`;
   },
   online: () => `<h2>Online</h2><div class="kick">find me</div><div class="links">${SITE.online.map(([a,b,c])=>`<a href="${esc(c)}"><span>${esc(a)}</span><span>${esc(b)}</span></a>`).join("")}</div>`
 };
@@ -736,13 +792,38 @@ addEventListener("resize", place);
 
 /* ---- lo-fi (static) version ---- */
 function buildLofi(){
-  $("#lofiWrap").innerHTML = `<div class="hello">Hi, I'm ${esc(SITE.name)}.</div><p class="intro">${esc(SITE.intro)}</p>
-  <div class="note" id="lofiNote"></div>
-  ${ORDER.map(k=>`<div class="sheet" id="lofi-${k}">${RENDER[k](true)}</div>`).join("")}`;
+  $("#lofiWrap").innerHTML = `<h1 class="hello">Hi, I'm ${esc(SITE.name)}.</h1>
+    <p class="intro">${esc(SITE.intro)}</p>
+    <a class="more" href="#about" data-go="about">More about me</a>
+    <hr>
+    <a class="snap" id="snap" href="#" aria-label="Open the interactive desk"><div class="snap-inner" id="snapInner"></div><span class="cta">▶ STEP INTO THE DESK · HI-FI</span></a>
+    <p class="note" id="lofiNote"></p>
+    ${ORDER.map(k=>`<section class="lsec" id="lofi-${k}">${RENDER[k](true)}</section>`).join("")}
+    <footer class="foot"><span>© ${new Date().getFullYear()} Esmail Abdullah</span><span>built by hand · rain included</span></footer>`;
+  $("#snap").onclick = e=>{ e.preventDefault(); setLofi(false); };
   // highlight the menu item of the section being read
   const io = new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting && document.body.classList.contains("lofi")) markNav(e.target.id.slice(5)); }),
-    { root: $("#lofi"), rootMargin: "-90px 0px -60% 0px" });
+    { root: $("#lofi"), rootMargin: "-100px 0px -60% 0px" });
   ORDER.forEach(k=>io.observe(document.getElementById("lofi-"+k)));
+  new ResizeObserver(fitSnap).observe($("#snap"));
+}
+// a still photo of the desk scene: a copy of the stage, scaled to the frame
+function paintSnap(){
+  const inner = $("#snapInner"); if (!inner) return;
+  const clone = $("#stage").cloneNode(true);
+  clone.removeAttribute("id"); clone.style.transform = "none"; clone.style.transition = "none";
+  clone.querySelectorAll("[id]").forEach(n=>n.removeAttribute("id"));
+  clone.querySelectorAll(".cart").forEach(n=>n.remove());
+  clone.querySelectorAll("[style*='visibility']").forEach(n=>n.style.visibility="");
+  const src = $("#rain"), dst = clone.querySelector("canvas");
+  if (src && dst){ dst.width = src.width; dst.height = src.height; try { dst.getContext("2d").drawImage(src,0,0); } catch(_){} }
+  inner.replaceChildren(...clone.childNodes);
+  fitSnap();
+}
+function fitSnap(){
+  const snap=$("#snap"), inner=$("#snapInner"); if (!snap || !inner) return;
+  const s = snap.clientWidth/1600;
+  inner.style.transform = `scale(${s}) translateY(-120px)`;
 }
 function markNav(k){ document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on", b.dataset.go===k)); }
 function lofiGo(k, smooth){
@@ -751,18 +832,31 @@ function lofiGo(k, smooth){
   const sec = document.getElementById("lofi-"+k); if (!sec) return;
   sec.scrollIntoView({behavior: smooth?"smooth":"auto"}); markNav(k); setHash(k);
 }
+function setDark(on, save){
+  document.body.classList.toggle("dark", on);
+  $("#themeBtn").setAttribute("aria-pressed", on ? "true" : "false");
+  if (save) { try{ localStorage.setItem("theme", on?"dark":"light"); }catch(_){} }
+}
 function setLofi(on){
   document.body.classList.toggle("lofi", on);
   $("#lofiBtn").classList.toggle("lit", on);
   $("#lofiBtn").textContent = on ? "▶ INTERACTIVE" : "▤ LO-FI";
   $("#lofiNote").innerHTML = innerWidth<700
-    ? `You're seeing the static version because the interactive desk works best on a bigger screen. <button id="tryInt">Try the interactive one anyway.</button>`
-    : `Static version. <button id="tryInt">Back to the desk.</button>`;
+    ? `You're reading the static version because the interactive desk works best on a bigger screen. <button id="tryInt">Try it anyway →</button>`
+    : `You're reading the static version. <button id="tryInt">Step into the desk →</button>`;
   $("#tryInt").onclick = ()=>setLofi(false);
   try{ localStorage.setItem("lofi", on?"1":"0"); }catch(_){}
-  if (!on) place();
+  if (on){ markNav(""); requestAnimationFrame(paintSnap); }
+  else place();
 }
 $("#lofiBtn").onclick = ()=>setLofi(!document.body.classList.contains("lofi"));
+$("#hifiBtn").onclick = ()=>setLofi(false);
+$("#themeBtn").onclick = ()=>setDark(!document.body.classList.contains("dark"), true);
+(function initTheme(){
+  let t=null; try{ t=localStorage.getItem("theme"); }catch(_){}
+  setDark(t ? t==="dark" : matchMedia("(prefers-color-scheme: dark)").matches, false);
+})();
+
 
 /* ---- ambient sound: rain + room hum, generated (no files) ---- */
 let audio;
