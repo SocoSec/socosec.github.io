@@ -178,9 +178,15 @@ body.lofi .hdr-tools{display:flex}
 <div id="lofi"><div class="wrap" id="lofiWrap"></div></div>
 
 <script type="application/json" id="digest-data">[{% for post in site.posts limit: 30 %}{"t":{{ post.title | jsonify }},"y":{{ post.date | date: "%d %b %Y" | jsonify }},"l":{{ post.url | relative_url | jsonify }}}{% unless forloop.last %},{% endunless %}{% endfor %}]</script>
-<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }</script>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }</script>
 <script type="module">
 import * as THREE from "three";
+import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 
 /* =================================================================
    YOUR CONTENT
@@ -259,7 +265,7 @@ const SITE = {
 };
 
 // Optional real photos: put files in the repo (e.g. photos/me.jpg) and set the paths here.
-SITE.photos = SITE.photos || { me:"", tree:"", mountains:"" };
+SITE.photos = SITE.photos || { me:"photos/me.jpg", tree:"photos/dragon-tree.jpg", mountains:"photos/socotra-highlands.jpg" };
 SITE.greeting = SITE.greeting || "Hey, welcome in! This room belongs to Esmail Abdullah, a security analyst from Socotra, now living in Budapest. Grab a coffee, look around, and click anything that looks interesting.";
 
 let DIGEST = [];
@@ -541,7 +547,7 @@ const TEX = {
     for (let y=4;y<h-4;y+=8) for (let xx=3;xx<w-3;xx+=7) if (r()<.32){ x.fillStyle=r()<.8?`hsl(${34+r()*14},90%,${55+r()*20}%)`:`hsl(205,70%,${60+r()*20}%)`; x.fillRect(xx,y,4,5); }
   })
 };
-const mat = (color, rough=.8, metal=0, extra={}) => new THREE.MeshStandardMaterial(Object.assign({ color, roughness:rough, metalness:metal }, extra));
+const mat = (color, rough=.8, metal=0, extra={}) => new THREE.MeshStandardMaterial(Object.assign({ color, roughness:rough, metalness:metal, envMapIntensity:.32 }, extra));
 
 /* ---- screens drawn on canvases inside the room ---- */
 function makeScreen(kind){
@@ -574,15 +580,18 @@ async function boot3D(){
   const canvas = $("#c3d");
   const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, preserveDrawingBuffer:true, powerPreference:"high-performance" });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75)); renderer.setSize(innerWidth, innerHeight, false);
-  renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.25;
+  renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15;
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.shadowMap.autoUpdate = false; renderer.shadowMap.needsUpdate = true;
   const scene = new THREE.Scene(); scene.background = new THREE.Color(0x05060c);
   scene.fog = new THREE.FogExp2(0x1b1a2c, 0.0085);
   const camera = new THREE.PerspectiveCamera(55, innerWidth/innerHeight, 0.02, 400);
+  const pmrem = new THREE.PMREMGenerator(renderer); scene.environment = pmrem.fromScene(new RoomEnvironment(), .04).texture;
+  const composer = new EffectComposer(renderer); composer.addPass(new RenderPass(scene, camera));
+  const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), .38, .5, .92); composer.addPass(bloom); composer.addPass(new OutputPass());
   const pickables = [];
   const tag = (obj, label, act) => { obj.traverse(o => { o.userData.pick = { label, act, root:obj }; }); pickables.push(obj); return obj; };
   const add = (geo, m, x, y, z, parent=scene, shadow=true) => { const o = new THREE.Mesh(geo, m); o.position.set(x,y,z); o.castShadow = shadow; o.receiveShadow = true; parent.add(o); return o; };
-  const box = (w,h,d,m,x,y,z,parent=scene,shadow=true) => add(new THREE.BoxGeometry(w,h,d), m, x, y, z, parent, shadow);
+  const box = (w,h,d,m,x,y,z,parent=scene,shadow=true) => { const mn = Math.min(w,h,d); const g = mn < .012 ? new THREE.BoxGeometry(w,h,d) : new RoundedBoxGeometry(w,h,d,3,Math.min(.014, mn*.18)); return add(g, m, x, y, z, parent, shadow); };
   const cyl = (rt,rb,h,m,x,y,z,parent=scene,seg=24) => add(new THREE.CylinderGeometry(rt,rb,h,seg), m, x, y, z, parent);
 
   /* ---- the room shell: 6 m × 6 m × 2.8 m ---- */
@@ -623,10 +632,10 @@ async function boot3D(){
   const skyMat = new THREE.MeshBasicMaterial({ map: TEX.sky(), fog:false });
   const sky = new THREE.Mesh(new THREE.PlaneGeometry(520, 230), skyMat); sky.position.set(-30, 30, -170); scene.add(sky);
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(400, 300), mat(0x07070c, .95)); ground.rotation.x=-Math.PI/2; ground.position.set(-20,-16,-120); scene.add(ground);
-  const tx0 = -20, r = rng(77), winTex = [1,2,3,4,5,6].map(s=>TEX.windows(s*13));
+  const tx0 = -9, r = rng(77), winTex = [1,2,3,4,5,6].map(s=>TEX.windows(s*13));
   for (let i=0;i<120;i++){
     const bz = -38 - r()*120, bx = -110 + r()*150, bh = 5 + r()*(bz < -90 ? 26 : 16), bw = 5+r()*10, bd = 5+r()*10;
-    if (Math.abs(bx-tx0) < 14 && bz < -64) continue;         // keep the tower's spot clear
+    if (Math.abs(bx - tx0*(-bz/78)) < bw/2 + 9) continue;          // keep the view to the tower clear         // keep the tower's spot clear
     const m = new THREE.Mesh(new THREE.BoxGeometry(bw,bh,bd), new THREE.MeshStandardMaterial({ color:0x0c0d16, roughness:.9, emissive:0xffffff, emissiveMap:winTex[i%6], emissiveIntensity:.85 }));
     m.position.set(bx, -16+bh/2, bz); scene.add(m);
   }
@@ -658,8 +667,7 @@ async function boot3D(){
     spPos.set([p.x,p.y,p.z], i*3); spCol.set([1,.75,.4], i*3); }
   const spGeo = new THREE.BufferGeometry(); spGeo.setAttribute("position", new THREE.BufferAttribute(spPos,3)); spGeo.setAttribute("color", new THREE.BufferAttribute(spCol,3));
   tower.add(new THREE.Points(spGeo, new THREE.PointsMaterial({ size:.5, vertexColors:true, transparent:true, blending:THREE.AdditiveBlending, depthWrite:false, fog:false })));
-  const beacon = new THREE.Mesh(new THREE.ConeGeometry(4, 90, 24, 1, true), new THREE.MeshBasicMaterial({ color:0xfff1c8, transparent:true, opacity:.06, blending:THREE.AdditiveBlending, depthWrite:false, side:THREE.DoubleSide, fog:false }));
-  beacon.geometry.translate(0,-45,0); beacon.rotation.z = Math.PI/2; const beaconPivot = new THREE.Group(); beaconPivot.position.y = TH+3; beaconPivot.add(beacon); tower.add(beaconPivot);
+    const beaconPivot = new THREE.Group(); beaconPivot.position.y = TH+3; tower.add(beaconPivot); { const topLight = new THREE.Mesh(new THREE.SphereGeometry(.45,12,8), new THREE.MeshBasicMaterial({ color:0xfff1c8, fog:false })); topLight.position.y = TH+5; tower.add(topLight); }
   sprite(TEX.glow("rgba(255,180,90,1)"), 30, tx0, 10, -80).material.opacity = .35;
   // rain: thousands of streaks between the window and the city
   const RN = 3200, rainPos = new Float32Array(RN*6), rainV = new Float32Array(RN);
@@ -693,7 +701,7 @@ async function boot3D(){
     dropTex.needsUpdate = true;
   };
   // curtains
-  const curtainMat = mat(0x8a5a44, .95, 0, { side:THREE.DoubleSide });
+  const curtainMat = mat(0x8e6c56, 1, 0, { side:THREE.DoubleSide, envMapIntensity:.1 });
   [[WX0-.42], [WX1+.42]].forEach(([cx])=>{ const g=new THREE.PlaneGeometry(.8, 2.55, 40, 1); const p=g.attributes.position; for (let i=0;i<p.count;i++) p.setZ(i, Math.sin(p.getX(i)*30)*.035); g.computeVertexNormals();
     const c=new THREE.Mesh(g, curtainMat); c.position.set(cx, 1.42, -2.9); c.castShadow=true; scene.add(c); });
   box(WX1-WX0+1.9, .03, .03, mat(0x2a1c12,.4,.6), WC, 2.62, -2.9);
@@ -702,7 +710,7 @@ async function boot3D(){
   scene.add(new THREE.HemisphereLight(0x55638f, 0x2a1a10, .45));
   const moon = new THREE.DirectionalLight(0x8fa0d0, .35); moon.position.set(-2, 6, -10); moon.target.position.set(0,0,0); scene.add(moon, moon.target);
   const flashLight = new THREE.DirectionalLight(0xc8d6ff, 0); flashLight.position.set(-3, 8, -12); scene.add(flashLight);
-  const lampLight = new THREE.PointLight(0xffb46b, 7, 7, 2); lampLight.castShadow = true; lampLight.shadow.mapSize.set(1024,1024); lampLight.shadow.bias = -.003; lampLight.shadow.radius = 5;
+  const lampLight = new THREE.PointLight(0xffb46b, 5, 7, 2); lampLight.castShadow = true; lampLight.shadow.mapSize.set(1024,1024); lampLight.shadow.bias = -.003; lampLight.shadow.radius = 5;
   const floorLampLight = new THREE.PointLight(0xffc27a, 5, 8, 2); floorLampLight.position.set(2.55, 1.72, -0.25);
   const pendant = new THREE.PointLight(0xffd9a0, 3.2, 10, 2); pendant.position.set(0.3, 2.18, 0.6);
   const tvGlow = new THREE.PointLight(0x58ffb0, .7, 2.4, 2); tvGlow.position.set(-0.42, 1.12, -2.15);
@@ -752,27 +760,71 @@ async function boot3D(){
   const kb = box(.44, .022, .15, mat(0xffffff,.6,0,{map:TEX.keys()}), -0.42, DY+.011, -2.28);
   const note = new THREE.Mesh(new THREE.PlaneGeometry(.22,.16), mat(0xffffff,.9,0,{map:TEX.notepad()})); note.rotation.set(-Math.PI/2,0,.12); note.position.set(0.12, DY+.002, -2.3); note.receiveShadow=true; scene.add(note);
   tag(note, "Notepad · today's todo", { type:"toast", msg:"todo: pop the root shell · write it up · refill the coffee · sleep (optional)" });
-  const phone = new THREE.Group(); phone.position.set(0.55, DY, -2.7); scene.add(phone);
+  const phone = new THREE.Group(); phone.position.set(0.56, DY, -2.36); phone.rotation.y = -.35; scene.add(phone);
   box(.2,.07,.17, mat(0xe2dccf,.45), 0,.035,0, phone); box(.23,.04,.06, mat(0xd7d0c2,.4), 0,.09,-.03, phone);
   box(.09,.005,.07, mat(0x8a8378,.6), 0,.071,.04, phone);
   tag(phone, "Phone · Online", { type:"section", k:"online" });
   // coffee mug with steam
   const mug = new THREE.Group(); mug.position.set(-0.02, DY, -2.25); scene.add(mug);
-  const ceramic = mat(0xf1ece4, .35);
-  cyl(.042,.04,.1, ceramic, 0,.05,0, mug, 32);
-  add(new THREE.CircleGeometry(.038, 32), mat(0x2a160a,.25), 0,.088,0, mug, false).rotation.x = -Math.PI/2;
-  add(new THREE.TorusGeometry(.028,.008,10,24), ceramic, .046,.052,0, mug).rotation.y = 0;
-  tag(mug, "Coffee · take a sip (M)", { type:"sip" });
+  const ceramic = mat(0xf1ece4, .22, 0, { envMapIntensity:.6 });
+  const mugProfile = [[0,0],[.036,0],[.04,.004],[.041,.02],[.043,.09],[.045,.1],[.041,.1],[.039,.09],[.037,.012],[0,.012]].map(([x,y])=>new THREE.Vector2(x,y));
+  add(new THREE.LatheGeometry(mugProfile, 48), ceramic, 0,0,0, mug);
+  const coffee = add(new THREE.CircleGeometry(.038, 32), mat(0x2b170b,.08,0,{ envMapIntensity:1 }), 0,.082,0, mug, false); coffee.rotation.x = -Math.PI/2;
+  add(new THREE.CircleGeometry(.022, 24), new THREE.MeshStandardMaterial({ color:0x8a5a32, roughness:.4, transparent:true, opacity:.55 }), .006,.0825,-.004, mug, false).rotation.x = -Math.PI/2;
+  const handle = add(new THREE.TorusGeometry(.024,.0065,12,28,Math.PI*1.25), ceramic, .044,.055,0, mug); handle.rotation.z = -Math.PI*.62;
+  const saucerProfile = [[0,0],[.06,0],[.072,.008],[.075,.012],[.07,.012],[.055,.006],[0,.006]].map(([x,y])=>new THREE.Vector2(x,y));
+  const saucer = new THREE.Mesh(new THREE.LatheGeometry(saucerProfile, 48), ceramic); saucer.position.set(-0.02, DY, -2.25); saucer.receiveShadow = true; scene.add(saucer);
+  mug.position.y = DY + .006;
+  const spoon = box(.075,.003,.008, mat(0xd8d8d8,.25,1), .055, DY+.009, -2.2); spoon.rotation.y = .5;
+  // moka pot
+  const moka = new THREE.Group(); moka.position.set(0.06, DY, -2.48); scene.add(moka);
+  const alu = mat(0xb9b9b9, .32, .9, { envMapIntensity:.9 });
+  const mokaProfile = [[0,0],[.045,0],[.048,.005],[.034,.07],[.03,.075],[.036,.08],[.05,.15],[.04,.16],[.012,.175],[0,.178]].map(([x,y])=>new THREE.Vector2(x,y));
+  add(new THREE.LatheGeometry(mokaProfile, 8), alu, 0,0,0, moka);
+  const mh = box(.012,.07,.03, mat(0x111111,.6), -.055,.115,0, moka); mh.rotation.z = .25;
+  add(new THREE.ConeGeometry(.012,.03,8), alu, .045,.15,0, moka).rotation.z = -1.1;
+  tag(moka, "Moka pot · fresh coffee", { type:"sip" });
+  tag(mug, "Coffee · take a sip (M)", { type:"sip" }); tag(saucer, "Coffee · take a sip (M)", { type:"sip" });
   mug.userData.home = mug.position.clone();
   const steamTex = TEX.glow("rgba(255,255,255,1)"), steam = [];
   for (let i=0;i<7;i++){ const s=new THREE.Sprite(new THREE.SpriteMaterial({ map:steamTex, transparent:true, opacity:0, depthWrite:false })); s.userData.t = i/7; scene.add(s); steam.push(s); }
+  // a little dragon's blood tree in a clay pot
+  const bonsai = new THREE.Group(); bonsai.position.set(0.47, DY, -2.8); scene.add(bonsai);
+  const clay = mat(0xa95f3f, .85);
+  const potProfile = [[0,0],[.05,0],[.056,.005],[.062,.07],[.068,.075],[.068,.082],[.06,.082],[.056,.075],[0,.075]].map(([x,y])=>new THREE.Vector2(x,y));
+  add(new THREE.LatheGeometry(potProfile, 40), clay, 0,0,0, bonsai);
+  const soil = add(new THREE.CircleGeometry(.056, 32), mat(0x3a2414,1), 0,.072,0, bonsai, false); soil.rotation.x = -Math.PI/2;
+  const bark = mat(0xb8a690, .9);
+  const tips = [];
+  const branch = (from, dir, len, rad, depth) => {
+    const to = from.clone().add(dir.clone().multiplyScalar(len));
+    const g = new THREE.CylinderGeometry(rad*.75, rad, len, 8); g.translate(0, len/2, 0);
+    const m = new THREE.Mesh(g, bark); m.position.copy(from); m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir.clone().normalize()); m.castShadow = true; bonsai.add(m);
+    if (depth === 0){ tips.push(to); return; }
+    for (let k=0;k<2;k++){ const a = depth*2.1 + k*Math.PI + Math.random()*.4; const nd = new THREE.Vector3(Math.cos(a)*.62, .78, Math.sin(a)*.62).normalize(); branch(to, nd, len*.82, rad*.72, depth-1); }
+  };
+  const trunkTop = new THREE.Vector3(0,.072+.1,0);
+  { const g = new THREE.CylinderGeometry(.011,.017,.1,10); g.translate(0,.05,0); const m = new THREE.Mesh(g, bark); m.position.y=.072; m.castShadow=true; bonsai.add(m); }
+  for (let k=0;k<3;k++){ const a = k/3*Math.PI*2; branch(trunkTop, new THREE.Vector3(Math.cos(a)*.5,.86,Math.sin(a)*.5).normalize(), .045, .009, 3); }
+  const cy = Math.max(...tips.map(t=>t.y)), rad = Math.max(...tips.map(t=>Math.hypot(t.x,t.z))) + .02;
+  const crown = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 16, 0, Math.PI*2, 0, Math.PI/2), mat(0x2f4a25, .85, 0, { envMapIntensity:.15 }));
+  crown.scale.set(rad, .045, rad); crown.position.y = cy - .006; crown.castShadow = true; bonsai.add(crown);
+  const under = new THREE.Mesh(new THREE.CircleGeometry(1, 32), mat(0x1f3018, .9)); under.rotation.x = Math.PI/2; under.scale.set(rad*.98, rad*.98, 1); under.position.y = cy - .006; bonsai.add(under);
+  const leafG = new THREE.ConeGeometry(.0028, .03, 4); leafG.translate(0,.015,0);
+  const leafM = mat(0x4b6b35, .7, 0, { envMapIntensity:.2 });
+  const NL = 900, tufts = new THREE.InstancedMesh(leafG, leafM, NL); tufts.castShadow = true;
+  const q = new THREE.Quaternion(), e = new THREE.Euler(), sc = new THREE.Vector3(1,1,1), mtx = new THREE.Matrix4(), pp = new THREE.Vector3();
+  for (let i=0;i<NL;i++){ const a=Math.random()*Math.PI*2, rr=Math.sqrt(Math.random())*rad, h=Math.sqrt(Math.max(0,1-(rr/rad)**2))*.045;
+    pp.set(Math.cos(a)*rr, cy-.004+h, Math.sin(a)*rr); e.set((Math.random()-.5)*.9 + Math.sin(a)*rr/rad*.6, 0, (Math.random()-.5)*.9 - Math.cos(a)*rr/rad*.6); q.setFromEuler(e); sc.setScalar(.7+Math.random()*.6); mtx.compose(pp, q, sc); tufts.setMatrixAt(i, mtx); }
+  bonsai.add(tufts);
+  tag(bonsai, "Dragon's blood tree · a little piece of Socotra", { type:"toast", msg:"A tiny dragon's blood tree (Dracaena cinnabari). The real ones only grow on Socotra." });
   // desk lamp
   const lamp = new THREE.Group(); lamp.position.set(-1.33, DY, -2.72); scene.add(lamp);
   const copper = mat(0xa8543a, .35, .6);
   cyl(.08,.09,.025, copper, 0,.012,0, lamp, 32);
   const arm = cyl(.008,.008,.42, mat(0x6e2f22,.4,.5), .03,.22,.03, lamp, 8); arm.rotation.z = -.15;
   const shade = add(new THREE.ConeGeometry(.12,.16,32,1,true), new THREE.MeshStandardMaterial({ color:0xa8543a, roughness:.4, metalness:.5, side:THREE.DoubleSide }), .08,.44,.08, lamp); shade.rotation.set(.35,0,-.35);
-  const bulb = add(new THREE.SphereGeometry(.028,16,12), new THREE.MeshBasicMaterial({ color:0xfff0d0 }), .1,.39,.1, lamp, false);
+  const bulb = add(new THREE.SphereGeometry(.024,16,12), new THREE.MeshBasicMaterial({ color:0xd9b48a }), .1,.39,.1, lamp, false);
   lamp.add(lampLight); lampLight.position.set(.1,.36,.12);
   tag(lamp, "Desk lamp · switch (L)", { type:"lamp" });
   // plant on the floor next to the desk
@@ -798,7 +850,7 @@ async function boot3D(){
   const pcScreen = new THREE.Mesh(new THREE.PlaneGeometry(.26,.195), new THREE.MeshBasicMaterial({ map:pcS.tex, toneMapped:false }));
   pcScreen.rotation.y = Math.PI/2; pcScreen.position.set(-2.453, 1.025, -0.5); scene.add(pcScreen);
   box(.15,.02,.4, beige, -2.38,.77,-0.5);
-  const polaroid = new THREE.Mesh(new THREE.PlaneGeometry(.075,.09), mat(0xffffff,.8,0,{ map:TEX.portrait() })); polaroid.rotation.set(0,Math.PI/2,.12); polaroid.position.set(-2.462, 1.12, -0.29); scene.add(polaroid);
+  const polaroid = new THREE.Mesh(new THREE.PlaneGeometry(.055,.066), mat(0xffffff,.8,0,{ map:TEX.portrait() })); polaroid.rotation.set(0,Math.PI/2,.12); polaroid.position.set(-2.462, 1.13, -0.285); scene.add(polaroid);
   tag(monitor, "Computer · About me (C)", { type:"section", k:"about" }); tag(pcScreen, "Computer · About me (C)", { type:"section", k:"about" });
   const PC = { c: pcScreen.position.clone(), n: new THREE.Vector3(1,0,0), w:.26, h:.195, S:pcS };
 
@@ -813,11 +865,29 @@ async function boot3D(){
   };
   const treePic = picture(TEX.dragonTree(), .9, .64, -2.97, 1.72, -0.55, Math.PI/2, 0x3a2414, "Dragon's blood tree · Socotra", { type:"toast", msg:"Dragon's blood tree (Dracaena cinnabari): it only grows on Socotra, my home island." });
   const mountPic = picture(TEX.mountains(), .5, .35, -2.97, 1.75, 0.55, Math.PI/2, 0x2a1c12, "Haghier mountains · Socotra", { type:"toast", msg:"The Haghier mountains, Socotra." });
-  const mePic = picture(TEX.portrait(), .42, .52, 2.97, 1.68, 0.35, -Math.PI/2, 0x1c1410, "That's me · About", { type:"section", k:"about" });
+  const mePic = picture(TEX.portrait(), .26, .26, 2.97, 1.55, 0.25, -Math.PI/2, 0x1c1410, "That's me · About", { type:"section", k:"about" });
   picture(TEX.map(), .6, .43, 2.97, 1.62, 1.45, -Math.PI/2, 0x3a2414, "Socotra · where I'm from", { type:"toast", msg:"Socotra Archipelago, Yemen. Hadibu is the main town." });
   picture(TEX.poster(), .5, .7, 1.75, 1.6, -2.97, 0, 0x111111, "Capture the flag", { type:"toast", msg:"CTF night 0x01 · 22:00 till root." });
-  const loadPhoto = (url, meshes) => { if (!url) return; new THREE.TextureLoader().load(url, t=>{ t.colorSpace=THREE.SRGBColorSpace; meshes.forEach(m=>{ m.material.map=t; m.material.needsUpdate=true; }); }); };
-  loadPhoto(SITE.photos.me, [mePic, polaroid]); loadPhoto(SITE.photos.tree, [treePic]); loadPhoto(SITE.photos.mountains, [mountPic]);
+  // small framed prints standing on furniture
+  const standing = (tex, w, h, x, y, z, ry, label, act) => {
+    const g = new THREE.Group(); g.position.set(x,y,z); g.rotation.y = ry; scene.add(g);
+    box(w+.03, h+.03, .012, mat(0x2a1c12,.5), 0, h/2+.015, 0, g);
+    const p = new THREE.Mesh(new THREE.PlaneGeometry(w,h), mat(0xffffff,.85,0,{ map:tex })); p.position.set(0, h/2+.015, .0065); g.add(p);
+    const strut = box(.01, h*.9, .01, mat(0x2a1c12,.5), 0, h*.45, -.03, g); strut.rotation.x = -.35;
+    g.rotation.x = -.08; if (label) tag(g, label, act); return p;
+  };
+  const tinyTree = standing(TEX.dragonTree(), .12, .16, -0.06, 2.06, 0, -Math.PI/2, "Firmihin, Socotra", { type:"toast", msg:"Firmihin: the dragon's blood forest on Socotra." });
+  tinyTree.parent.position.set(2.78, 2.065, -1.95);
+  const tinyHigh = standing(TEX.mountains(), .13, .17, 0, 0, 0, -2.4, "Socotra highlands", { type:"toast", msg:"Me in the Socotra highlands, Haghier mountains behind." });
+  tinyHigh.parent.position.set(2.48, .61, 1.68);
+  // photos look like old prints: faded, warm, a little dark, so they sit quietly in the room
+  const loadPhoto = (url, meshes) => { if (!url) return; const img = new Image(); img.onload = () => {
+      const c = document.createElement("canvas"); c.width = img.naturalWidth; c.height = img.naturalHeight; const x = c.getContext("2d");
+      x.filter = "sepia(.35) saturate(.7) contrast(.92) brightness(.78)"; x.drawImage(img, 0, 0); x.filter = "none";
+      const g = x.createRadialGradient(c.width/2, c.height/2, Math.min(c.width,c.height)*.25, c.width/2, c.height/2, Math.max(c.width,c.height)*.75); g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(1,"rgba(40,25,10,.45)"); x.fillStyle = g; x.fillRect(0,0,c.width,c.height);
+      const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+      meshes.forEach(m => { m.material.map = t; m.material.color.set(0xd8d0c4); m.material.needsUpdate = true; }); }; img.src = url; };
+  loadPhoto(SITE.photos.me, [mePic, polaroid]); loadPhoto(SITE.photos.tree, [tinyTree]); loadPhoto(SITE.photos.mountains, [tinyHigh]);
 
   /* ---- reading corner: bookshelf, armchair, floor lamp ---- */
   const shelf = new THREE.Group(); shelf.position.set(2.82, 0, -1.6); scene.add(shelf);
@@ -838,7 +908,6 @@ async function boot3D(){
   // side table with a framed photo
   const st = new THREE.Group(); st.position.set(2.55, 0, 1.6); scene.add(st);
   box(.45,.03,.45, midWood, 0,.55,0, st); [[-.19,-.19],[.19,-.19],[-.19,.19],[.19,.19]].forEach(([x,z])=>box(.03,.55,.03, midWood, x,.275,z, st));
-  box(.4,.04,.3, mat(0x2b2b33,.7), 0,.59,0, st);
   // rug, pendant lamp, door, wall clock
   const rug = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 1.9), mat(0xffffff,.95,0,{ map:TEX.rug() })); rug.rotation.x=-Math.PI/2; rug.position.set(0.2,.003,0.2); rug.receiveShadow=true; scene.add(rug);
   cyl(.004,.004,.55, mat(0x111111,.5), .3, H-.28, .6, scene, 6);
@@ -920,7 +989,7 @@ async function boot3D(){
     if (a.type === "toast") return toast(a.msg, 3600);
     if (a.type === "clock") return toast("It's " + new Date().toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" }) + " here. Time for another coffee?");
     if (a.type === "window"){ S.flash = 1.4; setTimeout(()=>sfx("thunder"), 900); return toast("Rain over Paris. The tower sparkles every night."); }
-    if (a.type === "lamp"){ S.lampOn = !S.lampOn; lampLight.intensity = S.lampOn ? 7 : 0; bulb.material.color.set(S.lampOn ? 0xfff0d0 : 0x333333); return; }
+    if (a.type === "lamp"){ S.lampOn = !S.lampOn; lampLight.intensity = S.lampOn ? 5 : 0; bulb.material.color.set(S.lampOn ? 0xd9b48a : 0x333333); return; }
     if (a.type === "sip"){
       if (!A.on) toast("Turn the sound on to hear the sip ☕");
       sfx("sip"); const h = mug.userData.home;
@@ -972,7 +1041,7 @@ async function boot3D(){
     } finally { busy = false; }
   }
   async function closeScreen(fast=false){
-    if (!playing){ if (!fast && S.pos.distanceTo(HOME.pos) > .05){ await flyTo(HOME.pos, HOME.target, 1.1); } S.mode = "room"; document.body.classList.remove("focused"); markNav(""); return; }
+    if (!playing){ if (!fast){ await flyTo(HOME.pos, HOME.target, 1.1); } S.mode = "room"; document.body.classList.remove("focused"); markNav(""); return; }
     const p = playing; playing = null; clearInterval(tcTimer);
     const tv = $("#tv"); if (tv.classList.contains("on")){ tv.className = "off " + p.kind; if (!fast) await wait(330); } tv.className = "";
     p.sc.S.set(IDLE[p.kind]);
@@ -1010,21 +1079,21 @@ async function boot3D(){
     // dust, steam, flicker
     for (let i=0;i<DN;i++){ dustPos[i*3+1] += Math.sin(t*.3+dustSeed[i])*.0006; dustPos[i*3] += Math.cos(t*.2+dustSeed[i])*.0004; } dustGeo.attributes.position.needsUpdate = true;
     steam.forEach(s=>{ s.userData.t = (s.userData.t + dt*.25) % 1; const k = s.userData.t; s.position.set(mug.position.x + Math.sin(k*6+s.id)*.015, mug.position.y+.11+k*.22, mug.position.z); s.scale.setScalar(.04+k*.08); s.material.opacity = Math.sin(k*Math.PI)*.22; });
-    if (S.lampOn) lampLight.intensity = 7 + Math.sin(t*13)*.05;
+    if (S.lampOn) lampLight.intensity = 5 + Math.sin(t*13)*.04;
     tvGlow.intensity = .6 + Math.random()*.15;
     // screens + clocks
     if (frameN % 2 === 0){ tvS.tick(); pcS.tick(); }
     const sec = Math.floor(t); if (sec !== lastSec){ lastSec = sec; drawClock(); const d=new Date(), x=vcrClock.x; x.fillStyle="#020a06"; x.fillRect(0,0,128,40); x.fillStyle="#4dffb8"; x.font="32px 'VT323'"; x.fillText(d.toTimeString().slice(0,5), 22, 31); vcrClock.tex.needsUpdate = true; }
     if (playing && S.mode === "screen") overlayRect(playing.sc);
   }
-  const resize = () => { renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
+  const resize = () => { renderer.setSize(innerWidth, innerHeight, false); composer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
     if (playing && S.mode === "screen"){ const v = screenView(playing.sc); camera.position.copy(v.pos); camera.lookAt(v.target); overlayRect(playing.sc); } };
   addEventListener("resize", resize);
 
   R = { renderer, scene, camera, S, running:false, openScreen, closeScreen, act, tapes,
-    start(){ if (this.running) return; this.running = true; clockT.getDelta(); const loop = () => { if (!this.running) return; requestAnimationFrame(loop); update(); renderer.render(scene, camera); }; loop(); },
+    start(){ if (this.running) return; this.running = true; clockT.getDelta(); const loop = () => { if (!this.running) return; requestAnimationFrame(loop); update(); composer.render(); }; loop(); },
     stop(){ this.running = false; },
-    snapshot(){ const keep = { p:camera.position.clone(), q:camera.quaternion.clone() }; camera.position.copy(HOME.pos); camera.lookAt(HOME.target); for (let i=0;i<3;i++){ drawDrops(); } tvS.n = tvS.total; tvS.draw(); renderer.render(scene, camera);
+    snapshot(){ const keep = { p:camera.position.clone(), q:camera.quaternion.clone() }; camera.position.copy(HOME.pos); camera.lookAt(HOME.target); for (let i=0;i<3;i++){ drawDrops(); } tvS.n = tvS.total; tvS.draw(); composer.render();
       const url = renderer.domElement.toDataURL("image/jpeg", .86); camera.position.copy(keep.p); camera.quaternion.copy(keep.q); return url; }
   };
   // shadows only for things near the lamp, to keep it fast
