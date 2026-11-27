@@ -1,6 +1,6 @@
 # socosec.github.io
 
-Personal portfolio of **Esmail Abdullah** — cybersecurity engineer, M.S.
+Personal portfolio of **Esmail Abdullah** — security researcher, M.S.
 Cybersecurity student at Óbuda University, Budapest.
 
 **Live site → https://socosec.github.io**
